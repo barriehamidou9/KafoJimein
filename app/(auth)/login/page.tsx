@@ -2,9 +2,14 @@
 
 import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
+import { useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const message = searchParams.get("message");
   const [password, setPassword] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -22,7 +27,7 @@ export default function LoginPage() {
       return;
     }
 
-    alert("Login successful.");
+  router.push("/");
   }
 
   return (
@@ -56,6 +61,11 @@ export default function LoginPage() {
           Log in
         </button>
       </form>
+      {message && (
+  <p className="rounded bg-yellow-100 p-3 text-yellow-800">
+    {message}
+  </p>
+)}
     </main>
   );
 }
