@@ -4,6 +4,7 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
+import SummaryCard from "@/components/SummaryCard";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");
@@ -58,7 +59,7 @@ export default function LoginPage() {
           type="submit"
           className="rounded bg-black px-3 py-2 text-white"
         >
-          Log in
+          Enter
         </button>
       </form>
       {message && (
