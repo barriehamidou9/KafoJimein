@@ -5,12 +5,22 @@
 // Redirect users to another page.
 import { redirect } from "next/navigation";
 
+// Link to other pages (e.g. categories).
+import Link from "next/link";
+
 // ==========================================
 // Supabase
 // ==========================================
 
 // Server-side Supabase client.
 import { createClient } from "@/lib/supabase/server";
+
+// ==========================================
+// Server Actions
+// ==========================================
+
+// List categories for the category dropdown.
+import { getCategories } from "@/app/actions/categories";
 
 // ==========================================
 // Components
@@ -77,12 +87,15 @@ async function addBudgetItem(
   const title = formData.get("title") as string;
   const amount = Number(formData.get("amount"));
   const type = formData.get("type") as string;
+  const rawCategoryId = formData.get("category_id") as string;
+  const category_id = rawCategoryId ? rawCategoryId : null;
 
   const { error } = await supabase.from("budget_items").insert({
     user_id: user.id,
     title,
     amount,
     type,
+    category_id,
   });
 
   if (error) {
@@ -110,11 +123,18 @@ if (error) {
 const items = budgetItems ?? [];
 
   // ==========================================
+  // Categories
+  // Fetch for the category dropdown.
+  // ==========================================
+
+  const categories = await getCategories();
+
+  // ==========================================
   // Prepare Data for the UI
   // Convert database records into the format
   // expected by the SummaryCard component.
   // ==========================================
-
+  
   const cards =
     budgetItems?.map((item) => ({
       title: item.title ?? "Unknown",
@@ -145,7 +165,16 @@ const items = budgetItems ?? [];
           </p>
         </div>
 
-        <LogoutButton />
+        <div className="flex items-center gap-4">
+          <Link
+            href="/categories"
+            className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+          >
+            Categories
+          </Link>
+
+          <LogoutButton />
+        </div>
       </div>
     </header>
 
@@ -194,7 +223,10 @@ const items = budgetItems ?? [];
             </p>
           </div>
 
-          <AddBudgetItemForm addBudgetItem={addBudgetItem} />
+          <AddBudgetItemForm
+            addBudgetItem={addBudgetItem}
+            categories={categories}
+          />
         </div>
 
         {/* Recent transactions */}

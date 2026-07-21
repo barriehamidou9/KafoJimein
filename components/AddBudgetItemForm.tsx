@@ -8,6 +8,12 @@
 import { useState } from "react";
 
 // ==========================================
+// Types
+// ==========================================
+
+import type { Category } from "@/app/actions/categories";
+
+// ==========================================
 // Props
 // ==========================================
 
@@ -16,10 +22,12 @@ type AddBudgetItemFormProps = {
   addBudgetItem: (
     formData: FormData
   ) => Promise<{ success: boolean }>;
+  categories: Category[];
 };
 
 export default function AddBudgetItemForm({
   addBudgetItem,
+  categories,
 }: AddBudgetItemFormProps) {
 
   // ==========================================
@@ -30,6 +38,17 @@ export default function AddBudgetItemForm({
   const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
+  const [categoryId, setCategoryId] = useState("");
+
+  // Only show categories matching the selected transaction type.
+  const filteredCategories = categories.filter(
+    (category) => category.type === type
+  );
+
+  function handleTypeChange(nextType: string) {
+    setType(nextType);
+    setCategoryId("");
+  }
 
   async function handleSubmit(formData: FormData) {
   console.log("Form handler started");
@@ -43,6 +62,7 @@ export default function AddBudgetItemForm({
     setTitle("");
     setAmount("");
     setType("expense");
+    setCategoryId("");
   }
 }
 
@@ -77,7 +97,7 @@ export default function AddBudgetItemForm({
           id="title"
           name="title"
           type="text"
-          placeholder="Example: Groceries"
+          placeholder="e.g. Costco run, July rent payment"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
@@ -127,11 +147,40 @@ export default function AddBudgetItemForm({
           id="type"
           name="type"
           value={type}
-          onChange={(event) => setType(event.target.value)}
+          onChange={(event) => handleTypeChange(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
         >
           <option value="expense">Expense</option>
           <option value="income">Income</option>
+          <option value="saving">Saving</option>
+        </select>
+      </div>
+
+      {/* ==========================================
+          Transaction Category
+      ========================================== */}
+
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="category_id"
+          className="text-sm font-medium text-slate-700"
+        >
+          Category
+        </label>
+
+        <select
+          id="category_id"
+          name="category_id"
+          value={categoryId}
+          onChange={(event) => setCategoryId(event.target.value)}
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+        >
+          <option value="">No category</option>
+          {filteredCategories.map((category) => (
+            <option key={category.id} value={category.id}>
+              {category.name}
+            </option>
+          ))}
         </select>
       </div>
 
