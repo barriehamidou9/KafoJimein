@@ -22,6 +22,9 @@ import { createClient } from "@/lib/supabase/server";
 // List categories for the category dropdown.
 import { getCategories } from "@/app/actions/categories";
 
+// Derive the caller's household_id for scoped inserts.
+import { getHouseholdId } from "@/lib/supabase/households";
+
 // ==========================================
 // Components
 // ==========================================
@@ -84,6 +87,8 @@ async function addBudgetItem(
     throw new Error("User is not authenticated.");
   }
 
+  const householdId = await getHouseholdId(supabase, user.id);
+
   const title = formData.get("title") as string;
   const amount = Number(formData.get("amount"));
   const type = formData.get("type") as string;
@@ -92,6 +97,7 @@ async function addBudgetItem(
 
   const { error } = await supabase.from("budget_items").insert({
     user_id: user.id,
+    household_id: householdId,
     title,
     amount,
     type,
@@ -166,6 +172,13 @@ const items = budgetItems ?? [];
         </div>
 
         <div className="flex items-center gap-4">
+          <Link
+            href="/budgets"
+            className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+          >
+            Budgets
+          </Link>
+
           <Link
             href="/categories"
             className="text-sm font-medium text-slate-600 hover:text-emerald-600"
