@@ -18,17 +18,28 @@ export default function LoginPage() {
 
     const supabase = createClient();
 
-    const { error } = await supabase.auth.signInWithPassword({
-      email,
-      password,
-    });
+    // Wrapped in try/catch: signInWithPassword can throw (e.g. a network
+    // failure) instead of resolving with { error }, which would otherwise
+    // fail silently with no alert and no redirect.
+    try {
+      const { error } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
 
-    if (error) {
-      alert(error.message);
-      return;
+      if (error) {
+        alert(error.message);
+        return;
+      }
+
+      router.push("/");
+    } catch (err) {
+      alert(
+        err instanceof Error
+          ? `Login failed: ${err.message}`
+          : "Login failed: something went wrong. Please try again."
+      );
     }
-
-  router.push("/");
   }
 
   return (
@@ -44,6 +55,10 @@ export default function LoginPage() {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
+          autoComplete="email"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
           className="rounded border px-3 py-2"
         />
 
@@ -52,6 +67,10 @@ export default function LoginPage() {
           placeholder="Password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
+          autoComplete="current-password"
+          autoCapitalize="off"
+          autoCorrect="off"
+          spellCheck={false}
           className="rounded border px-3 py-2"
         />
 

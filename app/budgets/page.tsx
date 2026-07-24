@@ -12,13 +12,16 @@ import { createClient } from "@/lib/supabase/server";
 // ==========================================
 
 import { getCategories } from "@/app/actions/categories";
-import { getBudgets, upsertBudget } from "@/app/actions/budgets";
+import { getBudgets } from "@/app/actions/budgets";
 
 // ==========================================
 // Components
 // ==========================================
 
 import LogoutButton from "@/components/LogoutButton";
+
+// Owns the reactive total + list of BudgetRow items.
+import BudgetsManager from "@/components/BudgetsManager";
 
 export default async function BudgetsPage() {
   // ==========================================
@@ -42,10 +45,6 @@ export default async function BudgetsPage() {
 
   const expenseCategories = categories.filter(
     (category) => category.type === "expense"
-  );
-
-  const budgetByCategoryId = new Map(
-    budgets.map((budget) => [budget.category_id, budget])
   );
 
   // ==========================================
@@ -99,50 +98,10 @@ export default async function BudgetsPage() {
               .
             </p>
           ) : (
-            <div className="space-y-3">
-              {expenseCategories.map((category) => {
-                const budget = budgetByCategoryId.get(category.id);
-
-                return (
-                  <form
-                    key={category.id}
-                    action={upsertBudget}
-                    className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3"
-                  >
-                    <input
-                      type="hidden"
-                      name="category_id"
-                      value={category.id}
-                    />
-
-                    <p className="font-medium text-slate-900">
-                      {category.name}
-                    </p>
-
-                    <div className="flex items-center gap-2">
-                      <span className="text-slate-500">$</span>
-
-                      <input
-                        type="number"
-                        name="amount"
-                        min="0"
-                        step="0.01"
-                        placeholder="0.00"
-                        defaultValue={budget ? budget.amount : ""}
-                        className="w-32 rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                      />
-
-                      <button
-                        type="submit"
-                        className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200"
-                      >
-                        Save
-                      </button>
-                    </div>
-                  </form>
-                );
-              })}
-            </div>
+            <BudgetsManager
+              expenseCategories={expenseCategories}
+              initialBudgets={budgets}
+            />
           )}
         </section>
       </div>

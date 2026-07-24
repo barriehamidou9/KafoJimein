@@ -12,22 +12,26 @@ import { useState } from "react";
 // ==========================================
 
 import type { Category } from "@/app/actions/categories";
+import type { BudgetItem } from "@/app/actions/budgetItems";
 
 // ==========================================
 // Props
 // ==========================================
 
-// Server Action received from page.tsx.
+// Server Action received from page.tsx (now via DashboardManager).
 type AddBudgetItemFormProps = {
-  addBudgetItem: (
-    formData: FormData
-  ) => Promise<{ success: boolean }>;
+  addBudgetItem: (formData: FormData) => Promise<BudgetItem>;
   categories: Category[];
+  // Reports the created item upward so the dashboard's shared state (and
+  // anything derived from it — summary cards, budget overview) updates
+  // immediately, without a page reload.
+  onAdded?: (item: BudgetItem) => void;
 };
 
 export default function AddBudgetItemForm({
   addBudgetItem,
   categories,
+  onAdded,
 }: AddBudgetItemFormProps) {
 
   // ==========================================
@@ -39,6 +43,8 @@ export default function AddBudgetItemForm({
   const [amount, setAmount] = useState("");
   const [type, setType] = useState("expense");
   const [categoryId, setCategoryId] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Only show categories matching the selected transaction type.
   const filteredCategories = categories.filter(
@@ -51,20 +57,24 @@ export default function AddBudgetItemForm({
   }
 
   async function handleSubmit(formData: FormData) {
-  console.log("Form handler started");
+    setError(null);
+    setIsSubmitting(true);
 
-  const result = await addBudgetItem(formData);
+    try {
+      const newItem = await addBudgetItem(formData);
 
-  console.log("Server response:", result);
+      onAdded?.(newItem);
 
-  if (result.success){
-
-    setTitle("");
-    setAmount("");
-    setType("expense");
-    setCategoryId("");
+      setTitle("");
+      setAmount("");
+      setType("expense");
+      setCategoryId("");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Something went wrong.");
+    } finally {
+      setIsSubmitting(false);
+    }
   }
-}
 
   // ==========================================
   // User Interface
@@ -185,12 +195,21 @@ export default function AddBudgetItemForm({
       </div>
 
       {/* ==========================================
+          Error
+      ========================================== */}
+
+      {error && (
+        <p className="text-sm font-medium text-rose-600">{error}</p>
+      )}
+
+      {/* ==========================================
           Submit Button
       ========================================== */}
 
       <button
         type="submit"
-        className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+        disabled={isSubmitting}
+        className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
       >
         Add transaction
       </button>

@@ -22,28 +22,24 @@ import { createClient } from "@/lib/supabase/server";
 // List categories for the category dropdown.
 import { getCategories } from "@/app/actions/categories";
 
-// Derive the caller's household_id for scoped inserts.
-import { getHouseholdId } from "@/lib/supabase/households";
+// List budgets and transactions — DashboardManager derives the Budget
+// overview client-side from these instead of a separate fetch, so it
+// stays in sync as transactions are added/edited/deleted.
+import { getBudgets } from "@/app/actions/budgets";
+import { addBudgetItem, getBudgetItems } from "@/app/actions/budgetItems";
 
 // ==========================================
 // Components
 // ==========================================
 
-// Displays a summary card for each budget item.
-import SummaryCard from "@/components/SummaryCard";
-
 // Allows the user to securely log out.
 import LogoutButton from "../components/LogoutButton";
 
-// Allow the user to add a budget.
-import AddBudgetItemForm from "@/components/AddBudgetItemForm";
-
-// refresh page when budget is enter
-
-import { revalidatePath } from "next/cache";
+// Owns all the reactive dashboard state: summary cards, budget overview,
+// add form, and the recent transactions list.
+import DashboardManager from "@/components/DashboardManager";
 
 export default async function Home() {
-
   // ==========================================
   // Connect to Supabase
   // ==========================================
@@ -63,91 +59,18 @@ export default async function Home() {
   if (!user) {
     redirect("/login?message=Please%20sign%20in%20to%20continue.");
   }
-  
-  // ==========================================
-// Server Action
-// Save a new budget item.
-// ==========================================
-
-async function addBudgetItem(
-  formData: FormData
-): Promise<{ success: boolean }> {
-  "use server";
-
-  console.log("Server Action started");
-  console.log(Object.fromEntries(formData));
-
-  const supabase = await createClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-
-  if (!user) {
-    throw new Error("User is not authenticated.");
-  }
-
-  const householdId = await getHouseholdId(supabase, user.id);
-
-  const title = formData.get("title") as string;
-  const amount = Number(formData.get("amount"));
-  const type = formData.get("type") as string;
-  const rawCategoryId = formData.get("category_id") as string;
-  const category_id = rawCategoryId ? rawCategoryId : null;
-
-  const { error } = await supabase.from("budget_items").insert({
-    user_id: user.id,
-    household_id: householdId,
-    title,
-    amount,
-    type,
-    category_id,
-  });
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  revalidatePath("/");
-
-  return { success: true};
-}
 
   // ==========================================
-// Database Query
-// ==========================================
-
-const { data: budgetItems, error } = await supabase
-  .from("budget_items")
-  .select("*")
-  .order("created_at", { ascending: false });
-
-if (error) {
-  console.error("Error loading budget items:", error);
-}
-
-const items = budgetItems ?? [];
-
-  // ==========================================
-  // Categories
-  // Fetch for the category dropdown.
+  // Data
+  // Fetched once here; DashboardManager owns it as live client state from
+  // this point on.
   // ==========================================
 
-  const categories = await getCategories();
-
-  // ==========================================
-  // Prepare Data for the UI
-  // Convert database records into the format
-  // expected by the SummaryCard component.
-  // ==========================================
-  
-  const cards =
-    budgetItems?.map((item) => ({
-      title: item.title ?? "Unknown",
-      amount: Number(item.amount ?? 0),
-    })) ?? [];
-
-  
+  const [items, categories, budgets] = await Promise.all([
+    getBudgetItems(),
+    getCategories(),
+    getBudgets(),
+  ]);
 
   // ==========================================
   // User Interface
@@ -155,137 +78,68 @@ const items = budgetItems ?? [];
   // ==========================================
 
   return (
-  <main className="min-h-screen bg-slate-50">
-    {/* ==========================================
-        Navigation
-    ========================================== */}
-    <header className="border-b border-slate-200 bg-white">
-      <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <div>
-          <h1 className="text-xl font-bold text-slate-900">
-            KafoJimein
-          </h1>
+    <main className="min-h-screen bg-slate-50">
+      {/* ==========================================
+          Navigation
+      ========================================== */}
+      <header className="border-b border-slate-200 bg-white">
+        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
+          <div>
+            <h1 className="text-xl font-bold text-slate-900">
+              KafoJimein
+            </h1>
 
-          <p className="text-sm text-slate-500">
-            Family finance
-          </p>
+            <p className="text-sm text-slate-500">
+              Family finance
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <Link
+              href="/budgets"
+              className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+            >
+              Budgets
+            </Link>
+
+            <Link
+              href="/categories"
+              className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+            >
+              Categories
+            </Link>
+
+            <LogoutButton />
+          </div>
         </div>
+      </header>
 
-        <div className="flex items-center gap-4">
-          <Link
-            href="/budgets"
-            className="text-sm font-medium text-slate-600 hover:text-emerald-600"
-          >
-            Budgets
-          </Link>
-
-          <Link
-            href="/categories"
-            className="text-sm font-medium text-slate-600 hover:text-emerald-600"
-          >
-            Categories
-          </Link>
-
-          <LogoutButton />
-        </div>
-      </div>
-    </header>
-
-    {/* ==========================================
-        Dashboard
-    ========================================== */}
-    <div className="mx-auto max-w-6xl px-6 py-10">
-      {/* Page heading */}
-      <section className="mb-8">
-        <p className="text-sm font-medium text-emerald-600">
+      {/* ==========================================
           Dashboard
-        </p>
+      ========================================== */}
+      <div className="mx-auto max-w-6xl px-6 py-10">
+        {/* Page heading */}
+        <section className="mb-8">
+          <p className="text-sm font-medium text-emerald-600">
+            Dashboard
+          </p>
 
-        <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-          Your family finances
-        </h2>
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+            Your family finances
+          </h2>
 
-        <p className="mt-2 text-slate-500">
-          Track income, expenses, and your current balance.
-        </p>
-      </section>
+          <p className="mt-2 text-slate-500">
+            Track income, expenses, and your current balance.
+          </p>
+        </section>
 
-      {/* Summary cards */}
-      <section className="grid gap-4 md:grid-cols-3">
-        {items.map((item) => (
-          <SummaryCard
-            key={item.id}
-            title={item.title}
-            amount={item.amount}
-            type={item.type}
-          />
-        ))}
-      </section>
-
-      {/* Main dashboard content */}
-      <section className="mt-8 grid gap-8 lg:grid-cols-[380px_1fr]">
-        {/* Add transaction */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">
-              Add transaction
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Add new income or expenses.
-            </p>
-          </div>
-
-          <AddBudgetItemForm
-            addBudgetItem={addBudgetItem}
-            categories={categories}
-          />
-        </div>
-
-        {/* Recent transactions */}
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">
-              Recent transactions
-            </h3>
-
-            <p className="mt-1 text-sm text-slate-500">
-              Your latest financial activity.
-            </p>
-          </div>
-
-          <div className="space-y-3">
-            {items.map((item) => (
-              <div
-                key={item.id}
-                className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3"
-              >
-                <div>
-                  <p className="font-medium text-slate-900">
-                    {item.title}
-                  </p>
-
-                  <p className="text-sm capitalize text-slate-500">
-                    {item.type}
-                  </p>
-                </div>
-
-                <p
-                  className={
-                    item.type === "income"
-                      ? "font-semibold text-emerald-600"
-                      : "font-semibold text-rose-600"
-                  }
-                >
-                  {item.type === "income" ? "+" : "-"}$
-                  {Number(item.amount).toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-    </div>
-  </main>
-);
+        <DashboardManager
+          initialItems={items}
+          categories={categories}
+          budgets={budgets}
+          addBudgetItem={addBudgetItem}
+        />
+      </div>
+    </main>
+  );
 }

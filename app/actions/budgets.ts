@@ -9,6 +9,22 @@ import { getHouseholdId } from "@/lib/supabase/households";
 import { isRlsRejection } from "@/lib/supabase/errors";
 
 // ==========================================
+// Server Actions
+// Reused by getBudgetOverview() instead of re-deriving categories/items.
+// ==========================================
+
+import { getCategories } from "@/app/actions/categories";
+import { getBudgetItems } from "@/app/actions/budgetItems";
+
+// ==========================================
+// Shared aggregation logic (also used client-side by DashboardManager, so
+// both the initial server-rendered value and later client recomputes
+// agree exactly).
+// ==========================================
+
+import { computeBudgetOverview } from "@/lib/budgetOverview";
+
+// ==========================================
 // Next.js utilities
 // ==========================================
 
@@ -25,6 +41,13 @@ export type Budget = {
   amount: number;
   created_at: string;
   updated_at: string;
+};
+
+export type BudgetOverviewItem = {
+  categoryId: string;
+  categoryName: string;
+  budgetAmount: number;
+  spentAmount: number;
 };
 
 // ==========================================
@@ -55,9 +78,11 @@ export async function getBudgets(): Promise<Budget[]> {
 // ==========================================
 // Server Action
 // Create or update the budget for a category (one per category).
+// Returns the saved row so the caller (a client component) can update its
+// local state — e.g. learn the new budget's id — without a page reload.
 // ==========================================
 
-export async function upsertBudget(formData: FormData): Promise<void> {
+export async function upsertBudget(formData: FormData): Promise<Budget> {
   const supabase = await createClient();
 
   const {
@@ -73,14 +98,18 @@ export async function upsertBudget(formData: FormData): Promise<void> {
   const categoryId = formData.get("category_id") as string;
   const amount = Number(formData.get("amount"));
 
-  const { error } = await supabase.from("budgets").upsert(
-    {
-      household_id: householdId,
-      category_id: categoryId,
-      amount,
-    },
-    { onConflict: "household_id,category_id" }
-  );
+  const { data, error } = await supabase
+    .from("budgets")
+    .upsert(
+      {
+        household_id: householdId,
+        category_id: categoryId,
+        amount,
+      },
+      { onConflict: "household_id,category_id" }
+    )
+    .select()
+    .single();
 
   if (error) {
     if (isRlsRejection(error)) {
@@ -91,6 +120,8 @@ export async function upsertBudget(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/budgets");
+
+  return data;
 }
 
 // ==========================================
@@ -122,4 +153,32 @@ export async function deleteBudget(formData: FormData): Promise<void> {
   }
 
   revalidatePath("/budgets");
+}
+
+// ==========================================
+// Budget vs. actual spending for the current calendar month, for every
+// expense category that has a budget set. Reuses getBudgets(),
+// getCategories(), and getBudgetItems() rather than re-deriving household
+// data or duplicating the aggregation logic — the same computeBudgetOverview()
+// is also called client-side (DashboardManager) so both agree exactly.
+// ==========================================
+
+export async function getBudgetOverview(): Promise<BudgetOverviewItem[]> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const [categories, budgets, items] = await Promise.all([
+    getCategories(),
+    getBudgets(),
+    getBudgetItems(),
+  ]);
+
+  return computeBudgetOverview(items, budgets, categories);
 }
