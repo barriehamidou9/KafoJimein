@@ -11,21 +11,16 @@ import { createClient } from "@/lib/supabase/server";
 // Server Actions
 // ==========================================
 
-import { getCategories } from "@/app/actions/categories";
-import { getBudgets } from "@/app/actions/budgets";
-import { getCurrentUserRole, getHouseholdMembers } from "@/app/actions/households";
-import { getHouseholdIncome } from "@/app/actions/householdIncome";
+import { getDeletedBudgetItems } from "@/app/actions/budgetItems";
 
 // ==========================================
 // Components
 // ==========================================
 
 import LogoutButton from "@/components/LogoutButton";
+import DeletedItemsList from "@/components/DeletedItemsList";
 
-// Owns the reactive total + list of BudgetRow items.
-import BudgetsManager from "@/components/BudgetsManager";
-
-export default async function BudgetsPage() {
+export default async function DeletedPage() {
   // ==========================================
   // Authentication
   // ==========================================
@@ -40,20 +35,7 @@ export default async function BudgetsPage() {
     redirect("/login?message=Please%20sign%20in%20to%20continue.");
   }
 
-  const [categories, budgets, role, householdMembers, income] =
-    await Promise.all([
-      getCategories(),
-      getBudgets(),
-      getCurrentUserRole(),
-      getHouseholdMembers(),
-      getHouseholdIncome(),
-    ]);
-
-  const isAdmin = role === "admin";
-
-  const expenseCategories = categories.filter(
-    (category) => category.type === "expense"
-  );
+  const items = await getDeletedBudgetItems();
 
   // ==========================================
   // User Interface
@@ -84,29 +66,18 @@ export default async function BudgetsPage() {
           </Link>
 
           <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-            Budgets
+            Recently deleted
           </h2>
 
           <p className="mt-2 text-slate-500">
-            Set a spending limit for each expense category.
+            Transactions deleted in the last 30 days. Restore one to bring
+            it back.
           </p>
         </section>
 
-        {/* Budgets per expense category */}
+        {/* Deleted transactions */}
         <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          {!isAdmin && (
-            <p className="mb-4 text-sm text-slate-500">
-              Only household admins can manage budgets.
-            </p>
-          )}
-
-          <BudgetsManager
-            expenseCategories={expenseCategories}
-            initialBudgets={budgets}
-            householdMembers={householdMembers}
-            initialIncome={income}
-            isAdmin={isAdmin}
-          />
+          <DeletedItemsList initialItems={items} />
         </section>
       </div>
     </main>

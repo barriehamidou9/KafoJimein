@@ -28,6 +28,12 @@ import { getCategories } from "@/app/actions/categories";
 import { getBudgets } from "@/app/actions/budgets";
 import { addBudgetItem, getBudgetItems } from "@/app/actions/budgetItems";
 
+// For the "Paid by" dropdown.
+import { getHouseholdMembers } from "@/app/actions/households";
+
+// For the "Due this month" section.
+import { getDueRecurringExpenses } from "@/app/actions/recurringExpenses";
+
 // ==========================================
 // Components
 // ==========================================
@@ -66,11 +72,14 @@ export default async function Home() {
   // this point on.
   // ==========================================
 
-  const [items, categories, budgets] = await Promise.all([
-    getBudgetItems(),
-    getCategories(),
-    getBudgets(),
-  ]);
+  const [items, categories, budgets, householdMembers, dueExpenses] =
+    await Promise.all([
+      getBudgetItems(),
+      getCategories(),
+      getBudgets(),
+      getHouseholdMembers(),
+      getDueRecurringExpenses(),
+    ]);
 
   // ==========================================
   // User Interface
@@ -109,6 +118,27 @@ export default async function Home() {
               Categories
             </Link>
 
+            <Link
+              href="/recurring"
+              className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+            >
+              Recurring
+            </Link>
+
+            <Link
+              href="/deleted"
+              className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+            >
+              Deleted
+            </Link>
+
+            <Link
+              href="/settings"
+              className="text-sm font-medium text-slate-600 hover:text-emerald-600"
+            >
+              Settings
+            </Link>
+
             <LogoutButton />
           </div>
         </div>
@@ -137,6 +167,9 @@ export default async function Home() {
           initialItems={items}
           categories={categories}
           budgets={budgets}
+          householdMembers={householdMembers}
+          currentUserId={user.id}
+          initialDueExpenses={dueExpenses}
           addBudgetItem={addBudgetItem}
         />
       </div>

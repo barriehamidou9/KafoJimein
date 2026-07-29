@@ -25,6 +25,10 @@ import type { Category } from "@/app/actions/categories";
 type BudgetRowProps = {
   category: Category;
   initialBudget: Budget | null;
+  // RLS already blocks a non-admin's write; this just avoids showing
+  // controls that would fail, per the UI-level role-awareness this
+  // component is part of.
+  isAdmin: boolean;
   // Let a parent (e.g. BudgetsManager) keep a live total in sync without
   // this row needing to know anything about how that total is computed.
   onSaved?: (budget: Budget) => void;
@@ -37,6 +41,7 @@ type RowStatus = "idle" | "saved" | "removed";
 export default function BudgetRow({
   category,
   initialBudget,
+  isAdmin,
   onSaved,
   onRemoved,
 }: BudgetRowProps) {
@@ -122,7 +127,27 @@ export default function BudgetRow({
 
   // ==========================================
   // User Interface
+  // Read-only for non-admins: no input, no Save/Remove — just the
+  // current amount (or a placeholder if none is set).
   // ==========================================
+
+  if (!isAdmin) {
+    return (
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3">
+        <p className="font-medium text-slate-900">{category.name}</p>
+
+        <p className="text-slate-500">
+          {budget ? (
+            <span className="font-semibold text-slate-900">
+              ${Number(budget.amount).toFixed(2)}
+            </span>
+          ) : (
+            "No budget set"
+          )}
+        </p>
+      </div>
+    );
+  }
 
   return (
     <form

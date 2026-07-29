@@ -25,6 +25,7 @@ import { computeBudgetOverview } from "@/lib/budgetOverview";
 import SummaryCard from "@/components/SummaryCard";
 import AddBudgetItemForm from "@/components/AddBudgetItemForm";
 import TransactionsManager from "@/components/TransactionsManager";
+import DueRecurringExpenseCard from "@/components/DueRecurringExpenseCard";
 
 // ==========================================
 // Types
@@ -33,11 +34,16 @@ import TransactionsManager from "@/components/TransactionsManager";
 import type { BudgetItem } from "@/app/actions/budgetItems";
 import type { Category } from "@/app/actions/categories";
 import type { Budget } from "@/app/actions/budgets";
+import type { HouseholdMember } from "@/app/actions/households";
+import type { RecurringExpense } from "@/app/actions/recurringExpenses";
 
 type DashboardManagerProps = {
   initialItems: BudgetItem[];
   categories: Category[];
   budgets: Budget[];
+  householdMembers: HouseholdMember[];
+  currentUserId: string;
+  initialDueExpenses: RecurringExpense[];
   addBudgetItem: (formData: FormData) => Promise<BudgetItem>;
 };
 
@@ -45,6 +51,9 @@ export default function DashboardManager({
   initialItems,
   categories,
   budgets,
+  householdMembers,
+  currentUserId,
+  initialDueExpenses,
   addBudgetItem,
 }: DashboardManagerProps) {
   // ==========================================
@@ -54,6 +63,13 @@ export default function DashboardManager({
   // ==========================================
 
   const [items, setItems] = useState<BudgetItem[]>(initialItems);
+
+  // Due recurring expenses, removed from this list once confirmed or
+  // skipped — nothing re-fetches this, so once handled it's just gone
+  // from view for the rest of the session (correct, since it won't be
+  // due again until next period).
+  const [dueExpenses, setDueExpenses] =
+    useState<RecurringExpense[]>(initialDueExpenses);
 
   // Recomputed from current state on every render, so it's always current
   // — not a separate fetch that can drift out of sync with `items`.
@@ -75,6 +91,21 @@ export default function DashboardManager({
 
   function handleDeleted(id: string) {
     setItems((previous) => previous.filter((item) => item.id !== id));
+  }
+
+  function handleExpenseConfirmed(expenseId: string, transaction: BudgetItem) {
+    setDueExpenses((previous) =>
+      previous.filter((expense) => expense.id !== expenseId)
+    );
+    // Same shared state the manual Add transaction form feeds into, so
+    // Recent transactions/Budget overview/Summary cards update the same way.
+    handleAdded(transaction);
+  }
+
+  function handleExpenseSkipped(expenseId: string) {
+    setDueExpenses((previous) =>
+      previous.filter((expense) => expense.id !== expenseId)
+    );
   }
 
   // ==========================================
@@ -173,6 +204,37 @@ export default function DashboardManager({
         </section>
       )}
 
+      {/* Due this month: recurring expenses whose day has arrived and
+          haven't been confirmed/skipped yet this period. */}
+      {dueExpenses.length > 0 && (
+        <section className="mt-8 rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Due this month
+            </h3>
+
+            <p className="mt-1 text-sm text-slate-500">
+              Confirm or skip each recurring expense that&apos;s come due.
+            </p>
+          </div>
+
+          <div className="space-y-3">
+            {dueExpenses.map((expense) => (
+              <DueRecurringExpenseCard
+                key={expense.id}
+                expense={expense}
+                categories={categories}
+                householdMembers={householdMembers}
+                onConfirmed={(transaction) =>
+                  handleExpenseConfirmed(expense.id, transaction)
+                }
+                onSkipped={() => handleExpenseSkipped(expense.id)}
+              />
+            ))}
+          </div>
+        </section>
+      )}
+
       {/* Main dashboard content */}
       <section className="mt-8 grid gap-8 lg:grid-cols-[380px_1fr]">
         {/* Add transaction */}
@@ -190,6 +252,8 @@ export default function DashboardManager({
           <AddBudgetItemForm
             addBudgetItem={addBudgetItem}
             categories={categories}
+            householdMembers={householdMembers}
+            currentUserId={currentUserId}
             onAdded={handleAdded}
           />
         </div>
@@ -209,6 +273,8 @@ export default function DashboardManager({
           <TransactionsManager
             items={items}
             categories={categories}
+            householdMembers={householdMembers}
+            currentUserId={currentUserId}
             onUpdated={handleUpdated}
             onDeleted={handleDeleted}
           />

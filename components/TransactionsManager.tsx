@@ -16,10 +16,13 @@ import TransactionRow from "@/components/TransactionRow";
 
 import type { BudgetItem } from "@/app/actions/budgetItems";
 import type { Category } from "@/app/actions/categories";
+import type { HouseholdMember } from "@/app/actions/households";
 
 type TransactionsManagerProps = {
   items: BudgetItem[];
   categories: Category[];
+  householdMembers: HouseholdMember[];
+  currentUserId: string;
   onUpdated: (item: BudgetItem) => void;
   onDeleted: (id: string) => void;
 };
@@ -27,6 +30,8 @@ type TransactionsManagerProps = {
 export default function TransactionsManager({
   items,
   categories,
+  householdMembers,
+  currentUserId,
   onUpdated,
   onDeleted,
 }: TransactionsManagerProps) {
@@ -41,6 +46,8 @@ export default function TransactionsManager({
           key={item.id}
           item={item}
           categories={categories}
+          householdMembers={householdMembers}
+          currentUserId={currentUserId}
           onUpdated={onUpdated}
           onDeleted={() => onDeleted(item.id)}
         />

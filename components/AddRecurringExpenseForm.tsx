@@ -4,79 +4,62 @@
 // React
 // ==========================================
 
-// Manage the form input values.
 import { useState } from "react";
+
+// ==========================================
+// Server Actions
+// ==========================================
+
+import {
+  upsertRecurringExpense,
+  type RecurringExpense,
+} from "@/app/actions/recurringExpenses";
 
 // ==========================================
 // Types
 // ==========================================
 
 import type { Category } from "@/app/actions/categories";
-import type { BudgetItem } from "@/app/actions/budgetItems";
 import type { HouseholdMember } from "@/app/actions/households";
 
-// ==========================================
-// Props
-// ==========================================
-
-// Server Action received from page.tsx (now via DashboardManager).
-type AddBudgetItemFormProps = {
-  addBudgetItem: (formData: FormData) => Promise<BudgetItem>;
+type AddRecurringExpenseFormProps = {
   categories: Category[];
   householdMembers: HouseholdMember[];
   // Whoever is currently logged in — the default "Paid by" selection.
   currentUserId: string;
-  // Reports the created item upward so the dashboard's shared state (and
-  // anything derived from it — summary cards, budget overview) updates
-  // immediately, without a page reload.
-  onAdded?: (item: BudgetItem) => void;
+  onAdded?: (expense: RecurringExpense) => void;
 };
 
-export default function AddBudgetItemForm({
-  addBudgetItem,
+export default function AddRecurringExpenseForm({
   categories,
   householdMembers,
   currentUserId,
   onAdded,
-}: AddBudgetItemFormProps) {
-
+}: AddRecurringExpenseFormProps) {
   // ==========================================
   // Form State
-  // Store the user's input while typing.
   // ==========================================
 
-  const [title, setTitle] = useState("");
   const [amount, setAmount] = useState("");
-  const [type, setType] = useState("expense");
-  const [categoryId, setCategoryId] = useState("");
+  const [categoryId, setCategoryId] = useState(categories[0]?.id ?? "");
   const [paidBy, setPaidBy] = useState(currentUserId);
+  const [dayOfMonth, setDayOfMonth] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
-
-  // Only show categories matching the selected transaction type.
-  const filteredCategories = categories.filter(
-    (category) => category.type === type
-  );
-
-  function handleTypeChange(nextType: string) {
-    setType(nextType);
-    setCategoryId("");
-  }
 
   async function handleSubmit(formData: FormData) {
     setError(null);
     setIsSubmitting(true);
 
     try {
-      const newItem = await addBudgetItem(formData);
+      const newExpense = await upsertRecurringExpense(formData);
 
-      onAdded?.(newItem);
+      onAdded?.(newExpense);
 
-      setTitle("");
       setAmount("");
-      setType("expense");
-      setCategoryId("");
+      setCategoryId(categories[0]?.id ?? "");
       setPaidBy(currentUserId);
+      setDayOfMonth("");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Something went wrong.");
     } finally {
@@ -86,45 +69,12 @@ export default function AddBudgetItemForm({
 
   // ==========================================
   // User Interface
-  // Display the budget entry form.
-  // ==========================================
-
-    // ==========================================
-  // User Interface
-  // Display the transaction entry form.
   // ==========================================
 
   return (
-    <form
-      action={handleSubmit}
-      className="flex flex-col gap-5"
-    >
+    <form action={handleSubmit} className="flex flex-col gap-5">
       {/* ==========================================
-          Transaction Title
-      ========================================== */}
-
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="title"
-          className="text-sm font-medium text-slate-700"
-        >
-          Title
-        </label>
-
-        <input
-          id="title"
-          name="title"
-          type="text"
-          placeholder="e.g. Costco run, July rent payment"
-          value={title}
-          onChange={(event) => setTitle(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-          required
-        />
-      </div>
-
-      {/* ==========================================
-          Transaction Amount
+          Amount
       ========================================== */}
 
       <div className="flex flex-col gap-2">
@@ -142,40 +92,15 @@ export default function AddBudgetItemForm({
           placeholder="0.00"
           value={amount}
           onChange={(event) => setAmount(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
           min="0"
           step="0.01"
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
           required
         />
       </div>
 
       {/* ==========================================
-          Transaction Type
-      ========================================== */}
-
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="type"
-          className="text-sm font-medium text-slate-700"
-        >
-          Type
-        </label>
-
-        <select
-          id="type"
-          name="type"
-          value={type}
-          onChange={(event) => handleTypeChange(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-        >
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-          <option value="saving">Saving</option>
-        </select>
-      </div>
-
-      {/* ==========================================
-          Transaction Category
+          Category
       ========================================== */}
 
       <div className="flex flex-col gap-2">
@@ -192,9 +117,9 @@ export default function AddBudgetItemForm({
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
           className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          required
         >
-          <option value="">No category</option>
-          {filteredCategories.map((category) => (
+          {categories.map((category) => (
             <option key={category.id} value={category.id}>
               {category.name}
             </option>
@@ -230,6 +155,32 @@ export default function AddBudgetItemForm({
       </div>
 
       {/* ==========================================
+          Day of Month
+      ========================================== */}
+
+      <div className="flex flex-col gap-2">
+        <label
+          htmlFor="day_of_month"
+          className="text-sm font-medium text-slate-700"
+        >
+          Day of month due
+        </label>
+
+        <input
+          id="day_of_month"
+          name="day_of_month"
+          type="number"
+          placeholder="1-28"
+          value={dayOfMonth}
+          onChange={(event) => setDayOfMonth(event.target.value)}
+          min="1"
+          max="28"
+          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          required
+        />
+      </div>
+
+      {/* ==========================================
           Error
       ========================================== */}
 
@@ -246,7 +197,7 @@ export default function AddBudgetItemForm({
         disabled={isSubmitting}
         className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
       >
-        Add transaction
+        Add recurring expense
       </button>
     </form>
   );

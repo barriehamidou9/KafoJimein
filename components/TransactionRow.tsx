@@ -31,10 +31,16 @@ import { formatHouseholdDateTime } from "@/lib/household";
 // ==========================================
 
 import type { Category } from "@/app/actions/categories";
+import type { HouseholdMember } from "@/app/actions/households";
 
 type TransactionRowProps = {
   item: BudgetItem;
   categories: Category[];
+  householdMembers: HouseholdMember[];
+  // Whoever is currently logged in — fallback "Paid by" selection for the
+  // rare case a row has no paid_by set yet (e.g. inserted before this was
+  // wired in).
+  currentUserId: string;
   onUpdated?: (item: BudgetItem) => void;
   onDeleted?: () => void;
 };
@@ -42,6 +48,8 @@ type TransactionRowProps = {
 export default function TransactionRow({
   item,
   categories,
+  householdMembers,
+  currentUserId,
   onUpdated,
   onDeleted,
 }: TransactionRowProps) {
@@ -60,6 +68,7 @@ export default function TransactionRow({
   const [amount, setAmount] = useState(String(item.amount));
   const [type, setType] = useState(item.type);
   const [categoryId, setCategoryId] = useState(item.category_id ?? "");
+  const [paidBy, setPaidBy] = useState(item.paid_by ?? currentUserId);
 
   // Same filtering approach as AddBudgetItemForm: only show categories
   // matching the selected transaction type.
@@ -67,11 +76,17 @@ export default function TransactionRow({
     (category) => category.type === type
   );
 
+  // Who paid, for the view-mode "Paid by" line.
+  const paidByMember = householdMembers.find(
+    (member) => member.userId === item.paid_by
+  );
+
   function handleStartEdit() {
     setTitle(item.title);
     setAmount(String(item.amount));
     setType(item.type);
     setCategoryId(item.category_id ?? "");
+    setPaidBy(item.paid_by ?? currentUserId);
     setError(null);
     setIsEditing(true);
   }
@@ -101,6 +116,7 @@ export default function TransactionRow({
       formData.set("amount", amount);
       formData.set("type", type);
       formData.set("category_id", categoryId);
+      formData.set("paid_by", paidBy);
 
       const updated = await updateBudgetItem(formData);
 
@@ -190,6 +206,18 @@ export default function TransactionRow({
                 </option>
               ))}
             </select>
+
+            <select
+              value={paidBy}
+              onChange={(event) => setPaidBy(event.target.value)}
+              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            >
+              {householdMembers.map((member) => (
+                <option key={member.userId} value={member.userId}>
+                  {member.displayName}
+                </option>
+              ))}
+            </select>
           </div>
 
           {error && (
@@ -233,6 +261,12 @@ export default function TransactionRow({
           <span className="capitalize">{item.type}</span>
           {" · "}
           {formatHouseholdDateTime(item.created_at)}
+          {paidByMember && (
+            <>
+              {" · "}
+              Paid by {paidByMember.displayName}
+            </>
+          )}
         </p>
 
         {error && (

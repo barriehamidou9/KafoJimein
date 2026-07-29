@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 // ==========================================
 
 import { addCategory, deleteCategory, getCategories } from "@/app/actions/categories";
+import { getCurrentUserRole } from "@/app/actions/households";
 
 // ==========================================
 // Components
@@ -36,7 +37,12 @@ export default async function CategoriesPage() {
     redirect("/login?message=Please%20sign%20in%20to%20continue.");
   }
 
-  const categories = await getCategories();
+  const [categories, role] = await Promise.all([
+    getCategories(),
+    getCurrentUserRole(),
+  ]);
+
+  const isAdmin = role === "admin";
 
   // ==========================================
   // User Interface
@@ -75,66 +81,72 @@ export default async function CategoriesPage() {
           </p>
         </section>
 
-        <section className="grid gap-8 lg:grid-cols-[380px_1fr]">
-          {/* Add category */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-            <div className="mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">
-                Add category
-              </h3>
+        <section
+          className={
+            isAdmin ? "grid gap-8 lg:grid-cols-[380px_1fr]" : "grid gap-8"
+          }
+        >
+          {/* Add category — admins only */}
+          {isAdmin && (
+            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+              <div className="mb-6">
+                <h3 className="text-lg font-semibold text-slate-900">
+                  Add category
+                </h3>
 
-              <p className="mt-1 text-sm text-slate-500">
-                Create a new category to tag transactions.
-              </p>
+                <p className="mt-1 text-sm text-slate-500">
+                  Create a new category to tag transactions.
+                </p>
+              </div>
+
+              <form action={addCategory} className="flex flex-col gap-5">
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="name"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Name
+                  </label>
+
+                  <input
+                    id="name"
+                    name="name"
+                    type="text"
+                    placeholder="Example: Groceries"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor="type"
+                    className="text-sm font-medium text-slate-700"
+                  >
+                    Type
+                  </label>
+
+                  <select
+                    id="type"
+                    name="type"
+                    defaultValue="expense"
+                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                  >
+                    <option value="expense">Expense</option>
+                    <option value="income">Income</option>
+                    <option value="saving">Saving</option>
+                  </select>
+                </div>
+
+                <button
+                  type="submit"
+                  className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+                >
+                  Add category
+                </button>
+              </form>
             </div>
-
-            <form action={addCategory} className="flex flex-col gap-5">
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="name"
-                  className="text-sm font-medium text-slate-700"
-                >
-                  Name
-                </label>
-
-                <input
-                  id="name"
-                  name="name"
-                  type="text"
-                  placeholder="Example: Groceries"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                  required
-                />
-              </div>
-
-              <div className="flex flex-col gap-2">
-                <label
-                  htmlFor="type"
-                  className="text-sm font-medium text-slate-700"
-                >
-                  Type
-                </label>
-
-                <select
-                  id="type"
-                  name="type"
-                  defaultValue="expense"
-                  className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-                >
-                  <option value="expense">Expense</option>
-                  <option value="income">Income</option>
-                  <option value="saving">Saving</option>
-                </select>
-              </div>
-
-              <button
-                type="submit"
-                className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200"
-              >
-                Add category
-              </button>
-            </form>
-          </div>
+          )}
 
           {/* Existing categories, grouped by type */}
           <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
@@ -145,6 +157,12 @@ export default async function CategoriesPage() {
 
               <p className="mt-1 text-sm text-slate-500">Grouped by type.</p>
             </div>
+
+            {!isAdmin && (
+              <p className="mb-4 text-sm text-slate-500">
+                Only household admins can manage categories.
+              </p>
+            )}
 
             <div className="space-y-8">
               {CATEGORY_TYPES.map((type) => {
@@ -173,20 +191,22 @@ export default async function CategoriesPage() {
                               {category.name}
                             </p>
 
-                            <form action={deleteCategory}>
-                              <input
-                                type="hidden"
-                                name="id"
-                                value={category.id}
-                              />
+                            {isAdmin && (
+                              <form action={deleteCategory}>
+                                <input
+                                  type="hidden"
+                                  name="id"
+                                  value={category.id}
+                                />
 
-                              <button
-                                type="submit"
-                                className="text-sm font-medium text-rose-600 hover:text-rose-700"
-                              >
-                                Delete
-                              </button>
-                            </form>
+                                <button
+                                  type="submit"
+                                  className="text-sm font-medium text-rose-600 hover:text-rose-700"
+                                >
+                                  Delete
+                                </button>
+                              </form>
+                            )}
                           </div>
                         ))}
                       </div>

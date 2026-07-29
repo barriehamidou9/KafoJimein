@@ -80,3 +80,30 @@ export function startOfMonthUtc(monthOffset: number, timeZone: string): Date {
 
   return new Date(naiveUtc - offset2);
 }
+
+// Today's date as the household's local calendar sees it right now —
+// year and month 1-indexed (month: 1 = January), matching the plain
+// integer convention recurring_expenses.last_confirmed_year/month use
+// (these aren't JS Date objects, so there's no reason to carry over
+// Date.getMonth()'s 0-indexing here).
+export function getHouseholdToday(timeZone: string): {
+  year: number;
+  month: number;
+  day: number;
+} {
+  const parts = new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+
+  const get = (type: string) =>
+    Number(parts.find((part) => part.type === type)?.value);
+
+  return {
+    year: get("year"),
+    month: get("month"),
+    day: get("day"),
+  };
+}

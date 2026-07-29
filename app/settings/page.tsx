@@ -11,21 +11,16 @@ import { createClient } from "@/lib/supabase/server";
 // Server Actions
 // ==========================================
 
-import { getCategories } from "@/app/actions/categories";
-import { getBudgets } from "@/app/actions/budgets";
-import { getCurrentUserRole, getHouseholdMembers } from "@/app/actions/households";
-import { getHouseholdIncome } from "@/app/actions/householdIncome";
+import { getMyProfile } from "@/app/actions/profiles";
 
 // ==========================================
 // Components
 // ==========================================
 
 import LogoutButton from "@/components/LogoutButton";
+import DisplayNameEditor from "@/components/DisplayNameEditor";
 
-// Owns the reactive total + list of BudgetRow items.
-import BudgetsManager from "@/components/BudgetsManager";
-
-export default async function BudgetsPage() {
+export default async function SettingsPage() {
   // ==========================================
   // Authentication
   // ==========================================
@@ -40,20 +35,7 @@ export default async function BudgetsPage() {
     redirect("/login?message=Please%20sign%20in%20to%20continue.");
   }
 
-  const [categories, budgets, role, householdMembers, income] =
-    await Promise.all([
-      getCategories(),
-      getBudgets(),
-      getCurrentUserRole(),
-      getHouseholdMembers(),
-      getHouseholdIncome(),
-    ]);
-
-  const isAdmin = role === "admin";
-
-  const expenseCategories = categories.filter(
-    (category) => category.type === "expense"
-  );
+  const profile = await getMyProfile();
 
   // ==========================================
   // User Interface
@@ -84,29 +66,28 @@ export default async function BudgetsPage() {
           </Link>
 
           <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-            Budgets
+            Settings
           </h2>
 
           <p className="mt-2 text-slate-500">
-            Set a spending limit for each expense category.
+            Set how your name appears to other household members, e.g. in
+            &quot;Paid by&quot;.
           </p>
         </section>
 
-        {/* Budgets per expense category */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
-          {!isAdmin && (
-            <p className="mb-4 text-sm text-slate-500">
-              Only household admins can manage budgets.
-            </p>
-          )}
+        {/* Display name */}
+        <section className="max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-slate-900">
+              Display name
+            </h3>
 
-          <BudgetsManager
-            expenseCategories={expenseCategories}
-            initialBudgets={budgets}
-            householdMembers={householdMembers}
-            initialIncome={income}
-            isAdmin={isAdmin}
-          />
+            <p className="mt-1 text-sm text-slate-500">
+              Shown to your household instead of your email.
+            </p>
+          </div>
+
+          <DisplayNameEditor initialDisplayName={profile.displayName} />
         </section>
       </div>
     </main>
