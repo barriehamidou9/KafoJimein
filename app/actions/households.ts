@@ -5,6 +5,7 @@
 // ==========================================
 
 import { createClient } from "@/lib/supabase/server";
+import { getHouseholdId } from "@/lib/supabase/households";
 
 // ==========================================
 // Types
@@ -50,6 +51,39 @@ export async function getCurrentUserRole(): Promise<HouseholdRole> {
   }
 
   return data.role as HouseholdRole;
+}
+
+// ==========================================
+// The caller's household's own name (e.g. "My Household"), for the
+// dashboard's small preamble line. "Household members can view their
+// household" (0003) already scopes this to households the caller
+// actually belongs to.
+// ==========================================
+
+export async function getHouseholdName(): Promise<string> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const householdId = await getHouseholdId(supabase, user.id);
+
+  const { data, error } = await supabase
+    .from("households")
+    .select("name")
+    .eq("id", householdId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.name;
 }
 
 // ==========================================

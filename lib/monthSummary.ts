@@ -8,6 +8,7 @@ import type { HouseholdIncome } from "@/app/actions/householdIncome";
 export type MonthSummary = {
   income: number;
   spent: number;
+  savings: number;
   left: number;
 };
 
@@ -19,10 +20,14 @@ export type MonthSummary = {
 // member), a fixed monthly figure with no date filter and no deleted_at
 // column to guard (that table doesn't have one).
 //
-// spent is still transaction-based: expense transactions within the
-// current calendar month, reusing the same getCurrentMonthRange() as
-// computeBudgetOverview rather than re-deriving the household-timezone
-// month boundary a third time.
+// spent and savings are both transaction-based: expense/saving
+// transactions within the current calendar month, reusing the same
+// getCurrentMonthRange() as computeBudgetOverview rather than
+// re-deriving the household-timezone month boundary a third time.
+//
+// left subtracts both — money moved to a savings goal this month isn't
+// free to spend, so it reduces "left" the same as an expense does, even
+// though the hero's own sub-line only ever displays spent/income.
 export function computeMonthSummary(
   items: BudgetItem[],
   householdIncome: HouseholdIncome[]
@@ -35,6 +40,7 @@ export function computeMonthSummary(
   const { start, end } = getCurrentMonthRange(HOUSEHOLD_TIME_ZONE);
 
   let spent = 0;
+  let savings = 0;
 
   for (const item of items) {
     // Defense in depth: getBudgetItems() already filters this out, but
@@ -45,20 +51,20 @@ export function computeMonthSummary(
       continue;
     }
 
-    if (item.type !== "expense") {
-      continue;
-    }
-
     const createdAt = new Date(item.created_at);
 
     if (createdAt < start || createdAt >= end) {
       continue;
     }
 
-    spent += Number(item.amount);
+    if (item.type === "expense") {
+      spent += Number(item.amount);
+    } else if (item.type === "saving") {
+      savings += Number(item.amount);
+    }
   }
 
-  const left = income - spent;
+  const left = income - spent - savings;
 
-  return { income, spent, left };
+  return { income, spent, savings, left };
 }

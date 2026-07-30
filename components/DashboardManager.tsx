@@ -18,6 +18,8 @@ import { useState } from "react";
 
 import { computeBudgetOverview } from "@/lib/budgetOverview";
 import { computeMonthSummary } from "@/lib/monthSummary";
+import { computeSavingsOverview } from "@/lib/savingsOverview";
+import { computePaidByBreakdown } from "@/lib/paidByBreakdown";
 
 // ==========================================
 // Components
@@ -26,6 +28,7 @@ import { computeMonthSummary } from "@/lib/monthSummary";
 import AddBudgetItemForm from "@/components/AddBudgetItemForm";
 import TransactionsManager from "@/components/TransactionsManager";
 import DueRecurringExpenseCard from "@/components/DueRecurringExpenseCard";
+import SavingCard from "@/components/SavingCard";
 
 // ==========================================
 // Types
@@ -37,26 +40,6 @@ import type { Budget } from "@/app/actions/budgets";
 import type { HouseholdMember } from "@/app/actions/households";
 import type { RecurringExpense } from "@/app/actions/recurringExpenses";
 import type { HouseholdIncome } from "@/app/actions/householdIncome";
-
-// A small check icon for the "Settled this month" header — calm, no
-// status color, matching the hand-drawn icon style used in Nav.tsx.
-function CheckIcon() {
-  return (
-    <svg
-      width="16"
-      height="16"
-      viewBox="0 0 16 16"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1.5"
-      strokeLinecap="round"
-      strokeLinejoin="round"
-      aria-hidden="true"
-    >
-      <path d="M3 8.5l3 3 7-7" />
-    </svg>
-  );
-}
 
 type DashboardManagerProps = {
   initialItems: BudgetItem[];
@@ -111,10 +94,17 @@ export default function DashboardManager({
     (item) => item.spentAmount > item.budgetAmount
   );
 
-  // Same split feeds "Settled this month" and "Tracked spending" below —
-  // one source, so both agree rather than each re-deriving is_fixed.
-  const fixedItems = budgetOverview.filter((item) => item.isFixed);
+  // Feeds "Tracked spending" below — the is_fixed split itself still
+  // lives in computeBudgetOverview; this just picks out the variable half
+  // ("Settled this month", the fixed half's old display, is gone).
   const variableItems = budgetOverview.filter((item) => !item.isFixed);
+
+  // Saving totals are cumulative (all-time), unlike everything else on
+  // the dashboard — see lib/savingsOverview.ts.
+  const savingsOverview = computeSavingsOverview(items, categories);
+
+  // Read-only transparency line under the hero — see lib/paidByBreakdown.ts.
+  const paidByBreakdown = computePaidByBreakdown(items, householdMembers);
 
   // Hero card derived display values.
   const { income, spent, left } = monthSummary;
@@ -180,8 +170,10 @@ export default function DashboardManager({
   return (
     <>
       {/* Hero: how much is actually left this month — income-based, not
-          budget-based. Per-category budgets still drive Budget overview
-          further down; they aren't this card's denominator. */}
+          budget-based. Per-category budgets still drive Tracked spending
+          further down; they aren't this card's denominator. Kept at its
+          own p-6/prominent size — everything below is intentionally
+          tighter so the hero stays the visual anchor. */}
       <div className="rounded-xl border-[0.5px] border-border bg-surface-card p-6">
         <div className="flex items-center justify-between">
           <p className="text-[13px] text-secondary">Left this month</p>
@@ -194,7 +186,7 @@ export default function DashboardManager({
         </div>
 
         <p
-          className={`mt-2 font-serif text-[52px] leading-none tabular-nums ${
+          className={`mt-2 font-serif text-[80px] leading-none tabular-nums ${
             isLeftNegative ? "text-danger" : "text-primary"
           }`}
         >
@@ -213,113 +205,107 @@ export default function DashboardManager({
         </div>
       </div>
 
-      {/* Settled this month: fixed bills (is_fixed = true). Plain list,
-          no bars or status colors — these are paid, so the section should
-          read calm rather than tracked. */}
-      {fixedItems.length > 0 && (
-        <section className="mt-8 rounded-2xl border border-border bg-surface-card p-6">
-          <div className="mb-4 flex items-center gap-2">
-            <span className="text-secondary">
-              <CheckIcon />
-            </span>
-
-            <h3 className="text-lg font-semibold text-primary">
-              Settled this month
-            </h3>
-          </div>
-
-          <div className="space-y-3">
-            {fixedItems.map((item) => (
-              <div
-                key={item.categoryId}
-                className="flex items-center justify-between"
-              >
-                <p className="text-sm text-primary">{item.categoryName}</p>
-
-                <p className="text-sm tabular-nums text-secondary">
-                  ${item.spentAmount.toFixed(2)}
-                </p>
-              </div>
-            ))}
-          </div>
-        </section>
+      {/* Who paid this month: read-only transparency, not its own card —
+          quiet enough to sit directly under the hero. */}
+      {paidByBreakdown.length > 0 && (
+        <p className="mt-3 text-xs text-muted">
+          Who paid this month —{" "}
+          {paidByBreakdown
+            .map((entry) => `${entry.displayName} $${entry.totalPaid.toFixed(2)}`)
+            .join(" · ")}
+        </p>
       )}
 
-      {/* Tracked spending: variable categories (is_fixed = false), budget
-          vs. actual spending this month. */}
-      {variableItems.length > 0 && (
-        <section className="mt-8 rounded-2xl border border-border bg-surface-card p-6">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-primary">
+      {/* Tracked spending + Saving, side by side on desktop, stacked on
+          narrow screens. */}
+      <div className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-2">
+        {/* Tracked spending: variable categories (is_fixed = false),
+            budget vs. actual spending this month. */}
+        {variableItems.length > 0 && (
+          <section className="rounded-2xl border border-border bg-surface-card p-5">
+            <h3 className="mb-4 text-base font-semibold text-primary">
               Tracked spending
             </h3>
 
-            <p className="mt-1 text-sm text-secondary">
-              Spending so far this month against each budgeted category.
-            </p>
-          </div>
+            <div className="space-y-4">
+              {variableItems.map((item) => {
+                // No budget set is filtered out upstream (computeBudgetOverview
+                // only returns categories that have one), so budgetAmount is
+                // always the denominator here except for the zero-budget edge
+                // case guarded below.
+                const percentage =
+                  item.budgetAmount > 0
+                    ? (item.spentAmount / item.budgetAmount) * 100
+                    : item.spentAmount > 0
+                      ? 100
+                      : 0;
 
-          <div className="space-y-4">
-            {variableItems.map((item) => {
-              // No budget set is filtered out upstream (computeBudgetOverview
-              // only returns categories that have one), so budgetAmount is
-              // always the denominator here except for the zero-budget edge
-              // case guarded below.
-              const percentage =
-                item.budgetAmount > 0
-                  ? (item.spentAmount / item.budgetAmount) * 100
-                  : item.spentAmount > 0
-                    ? 100
-                    : 0;
+                const isOverBudget = percentage > 100;
+                const isNearLimit = percentage >= 80 && percentage <= 100;
 
-              const isOverBudget = percentage > 100;
-              const isNearLimit = percentage >= 80 && percentage <= 100;
+                const fillColor = isOverBudget
+                  ? "bg-danger"
+                  : isNearLimit
+                    ? "bg-warn"
+                    : "bg-accent";
 
-              const fillColor = isOverBudget
-                ? "bg-danger"
-                : isNearLimit
-                  ? "bg-warn"
-                  : "bg-accent";
+                return (
+                  <div key={item.categoryId}>
+                    <div className="mb-1 flex items-center justify-between">
+                      <p className="font-medium text-primary">
+                        {item.categoryName}
+                      </p>
 
-              return (
-                <div key={item.categoryId}>
-                  <div className="mb-1 flex items-center justify-between">
-                    <p className="font-medium text-primary">
-                      {item.categoryName}
-                    </p>
+                      <p className="text-sm text-secondary">
+                        ${item.spentAmount.toFixed(2)} / $
+                        {item.budgetAmount.toFixed(2)}
+                      </p>
+                    </div>
 
-                    <p className="text-sm text-secondary">
-                      ${item.spentAmount.toFixed(2)} / $
-                      {item.budgetAmount.toFixed(2)}
-                    </p>
+                    <div className="h-2 w-full overflow-hidden rounded-full bg-surface-track">
+                      <div
+                        className={`h-full rounded-full ${fillColor}`}
+                        style={{ width: `${Math.min(percentage, 100)}%` }}
+                      />
+                    </div>
+
+                    {/* Never rely on the red bar alone to say "over budget". */}
+                    {isOverBudget && (
+                      <p className="mt-1 text-xs font-semibold text-danger">
+                        Over budget
+                      </p>
+                    )}
                   </div>
+                );
+              })}
+            </div>
+          </section>
+        )}
 
-                  <div className="h-2 w-full overflow-hidden rounded-full bg-surface-track">
-                    <div
-                      className={`h-full rounded-full ${fillColor}`}
-                      style={{ width: `${Math.min(percentage, 100)}%` }}
-                    />
-                  </div>
+        {/* Saving: cumulative (all-time) progress toward each saving
+            category's goal — its own blue world, not the red/green used
+            for expenses and income. */}
+        {savingsOverview.length > 0 && (
+          <section className="rounded-2xl border border-border bg-surface-card p-5">
+            <h3 className="mb-4 text-base font-semibold text-primary">
+              Saving
+            </h3>
 
-                  {/* Never rely on the red bar alone to say "over budget". */}
-                  {isOverBudget && (
-                    <p className="mt-1 text-xs font-semibold text-danger">
-                      Over budget
-                    </p>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-        </section>
-      )}
+            <div className="grid gap-4 sm:grid-cols-2">
+              {savingsOverview.map((saving) => (
+                <SavingCard key={saving.categoryId} saving={saving} />
+              ))}
+            </div>
+          </section>
+        )}
+      </div>
 
       {/* Due this month: recurring expenses whose day has arrived and
           haven't been confirmed/skipped yet this period. */}
       {dueExpenses.length > 0 && (
-        <section className="mt-8 rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-primary">
+        <section className="mt-6 rounded-2xl border border-border bg-surface-card p-5">
+          <div className="mb-4">
+            <h3 className="text-base font-semibold text-primary">
               Due this month
             </h3>
 
@@ -345,19 +331,14 @@ export default function DashboardManager({
         </section>
       )}
 
-      {/* Main dashboard content */}
-      <section className="mt-8 grid gap-8 lg:grid-cols-[380px_1fr]">
+      {/* Add transaction + Recent transactions, side by side on desktop
+          (narrower/wider, not equal), stacked on narrow screens. */}
+      <section className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[380px_1fr]">
         {/* Add transaction */}
-        <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-primary">
-              Add transaction
-            </h3>
-
-            <p className="mt-1 text-sm text-secondary">
-              Add new income or expenses.
-            </p>
-          </div>
+        <div className="rounded-2xl border border-border bg-surface-card p-5">
+          <h3 className="mb-4 text-base font-semibold text-primary">
+            Add transaction
+          </h3>
 
           <AddBudgetItemForm
             addBudgetItem={addBudgetItem}
@@ -369,16 +350,10 @@ export default function DashboardManager({
         </div>
 
         {/* Recent transactions */}
-        <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
-          <div className="mb-6">
-            <h3 className="text-lg font-semibold text-primary">
-              Recent transactions
-            </h3>
-
-            <p className="mt-1 text-sm text-secondary">
-              Your latest financial activity.
-            </p>
-          </div>
+        <div className="rounded-2xl border border-border bg-surface-card p-5">
+          <h3 className="mb-4 text-base font-semibold text-primary">
+            Recent transactions
+          </h3>
 
           <TransactionsManager
             items={items}

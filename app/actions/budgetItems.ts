@@ -6,6 +6,7 @@
 
 import { createClient } from "@/lib/supabase/server";
 import { getHouseholdId } from "@/lib/supabase/households";
+import { isRlsRejection } from "@/lib/supabase/errors";
 
 // ==========================================
 // Next.js utilities
@@ -267,4 +268,85 @@ export async function restoreBudgetItem(id: string): Promise<BudgetItem> {
   revalidatePath("/");
 
   return data;
+}
+
+// ==========================================
+// Server Action
+// Permanently (hard) delete a single already-soft-deleted transaction.
+// Irreversible, no undo.
+//
+// The .eq("deleted_at is not null") + admin-role check is enforced by
+// the "Household admins can permanently delete already-deleted budget
+// items" RLS policy (migration 0019) — that's the real security
+// boundary, not this function. A non-admin, or an attempt to target a
+// still-live row, is rejected by the database itself: the DELETE simply
+// matches zero rows rather than throwing, so no separate check is done
+// here beyond surfacing an RLS rejection if one occurs.
+// ==========================================
+
+export async function permanentlyDeleteBudgetItem(id: string): Promise<void> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const { error } = await supabase.from("budget_items").delete().eq("id", id);
+
+  if (error) {
+    if (isRlsRejection(error)) {
+      throw new Error(
+        "Only household admins can permanently delete transactions."
+      );
+    }
+
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/deleted");
+}
+
+// ==========================================
+// Server Action
+// Permanently (hard) delete every soft-deleted transaction in the
+// caller's household — not just the ones currently shown on the Deleted
+// page (that list is limited to the last 30 days; this clears all of
+// them, regardless of age). Irreversible, no undo.
+//
+// Same RLS policy as permanentlyDeleteBudgetItem enforces admin-only +
+// deleted_at is not null + household scoping — the .not(...) filter here
+// is belt-and-suspenders, not the actual security boundary.
+// ==========================================
+
+export async function clearAllDeletedBudgetItems(): Promise<void> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const { error } = await supabase
+    .from("budget_items")
+    .delete()
+    .not("deleted_at", "is", null);
+
+  if (error) {
+    if (isRlsRejection(error)) {
+      throw new Error(
+        "Only household admins can permanently delete transactions."
+      );
+    }
+
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/deleted");
 }

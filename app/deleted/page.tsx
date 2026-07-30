@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 // ==========================================
 
 import { getDeletedBudgetItems } from "@/app/actions/budgetItems";
+import { getCurrentUserRole } from "@/app/actions/households";
 
 // ==========================================
 // Components
@@ -35,7 +36,12 @@ export default async function DeletedPage() {
     redirect("/login?message=Please%20sign%20in%20to%20continue.");
   }
 
-  const items = await getDeletedBudgetItems();
+  const [items, role] = await Promise.all([
+    getDeletedBudgetItems(),
+    getCurrentUserRole(),
+  ]);
+
+  const isAdmin = role === "admin";
 
   // ==========================================
   // User Interface
@@ -68,7 +74,7 @@ export default async function DeletedPage() {
 
         {/* Deleted transactions */}
         <section className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
-          <DeletedItemsList initialItems={items} />
+          <DeletedItemsList initialItems={items} isAdmin={isAdmin} />
         </section>
       </div>
     </main>

@@ -20,6 +20,7 @@ import Link from "next/link";
 
 import BudgetRow from "@/components/BudgetRow";
 import IncomeRow from "@/components/IncomeRow";
+import CategoryTargetsRow from "@/components/CategoryTargetsRow";
 
 // ==========================================
 // Types
@@ -32,6 +33,7 @@ import type { HouseholdIncome, HouseholdIncomeEntry } from "@/app/actions/househ
 
 type BudgetsManagerProps = {
   expenseCategories: Category[];
+  savingCategories: Category[];
   initialBudgets: Budget[];
   householdMembers: HouseholdMember[];
   initialIncome: HouseholdIncomeEntry[];
@@ -40,6 +42,7 @@ type BudgetsManagerProps = {
 
 export default function BudgetsManager({
   expenseCategories,
+  savingCategories,
   initialBudgets,
   householdMembers,
   initialIncome,
@@ -209,6 +212,35 @@ export default function BudgetsManager({
             ))}
           </div>
         </>
+      )}
+
+      {/* Saving targets per saving category. Writes to
+          categories.target_amount/monthly_target (0017/0018) — deliberately
+          not the budgets table, whose trigger rejects saving categories. */}
+      {savingCategories.length > 0 && (
+        <div className="mt-8">
+          <h3 className="text-lg font-semibold text-primary">Saving</h3>
+
+          <p className="mt-1 text-sm text-secondary">
+            Set a total and monthly target for each saving category.
+          </p>
+
+          {!isAdmin && (
+            <p className="mt-4 text-sm text-secondary">
+              Only household admins can manage saving targets.
+            </p>
+          )}
+
+          <div className="mt-4 space-y-3">
+            {savingCategories.map((category) => (
+              <CategoryTargetsRow
+                key={category.id}
+                category={category}
+                isAdmin={isAdmin}
+              />
+            ))}
+          </div>
+        </div>
       )}
     </>
   );

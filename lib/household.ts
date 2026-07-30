@@ -15,6 +15,16 @@ export function formatHouseholdDateTime(isoString: string): string {
   }).format(new Date(isoString));
 }
 
+// "July 2026" — the household's current calendar month in its own
+// timezone, for small date labels (e.g. the dashboard's preamble line).
+export function getHouseholdMonthLabel(timeZone: string): string {
+  return new Intl.DateTimeFormat("en-US", {
+    timeZone,
+    month: "long",
+    year: "numeric",
+  }).format(new Date());
+}
+
 // ==========================================
 // Timezone math.
 // "Current month" must mean the household's local calendar month, not the

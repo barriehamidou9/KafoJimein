@@ -28,11 +28,18 @@ import { addBudgetItem, getBudgetItems } from "@/app/actions/budgetItems";
 // For the hero card's income figure.
 import { getHouseholdIncome } from "@/app/actions/householdIncome";
 
-// For the "Paid by" dropdown.
-import { getHouseholdMembers } from "@/app/actions/households";
+// For the "Paid by" dropdown, and the household's own name for the
+// preamble line.
+import { getHouseholdMembers, getHouseholdName } from "@/app/actions/households";
 
 // For the "Due this month" section.
 import { getDueRecurringExpenses } from "@/app/actions/recurringExpenses";
+
+// ==========================================
+// Household config
+// ==========================================
+
+import { HOUSEHOLD_TIME_ZONE, getHouseholdMonthLabel } from "@/lib/household";
 
 // ==========================================
 // Components
@@ -72,15 +79,25 @@ export default async function Home() {
   // this point on.
   // ==========================================
 
-  const [items, categories, budgets, householdMembers, dueExpenses, householdIncome] =
-    await Promise.all([
-      getBudgetItems(),
-      getCategories(),
-      getBudgets(),
-      getHouseholdMembers(),
-      getDueRecurringExpenses(),
-      getHouseholdIncome(),
-    ]);
+  const [
+    items,
+    categories,
+    budgets,
+    householdMembers,
+    dueExpenses,
+    householdIncome,
+    householdName,
+  ] = await Promise.all([
+    getBudgetItems(),
+    getCategories(),
+    getBudgets(),
+    getHouseholdMembers(),
+    getDueRecurringExpenses(),
+    getHouseholdIncome(),
+    getHouseholdName(),
+  ]);
+
+  const monthLabel = getHouseholdMonthLabel(HOUSEHOLD_TIME_ZONE);
 
   // ==========================================
   // User Interface
@@ -95,20 +112,10 @@ export default async function Home() {
           Dashboard
       ========================================== */}
       <div className="mx-auto max-w-6xl px-6 py-10">
-        {/* Page heading */}
-        <section className="mb-8">
-          <p className="text-sm font-medium text-accent-deep">
-            Dashboard
-          </p>
-
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
-            Your family finances
-          </h2>
-
-          <p className="mt-2 text-secondary">
-            Track income, expenses, and your current balance.
-          </p>
-        </section>
+        {/* Preamble: a single small line replaces the old heading block. */}
+        <p className="mb-6 text-xs text-muted">
+          {monthLabel} · {householdName} household
+        </p>
 
         <DashboardManager
           initialItems={items}

@@ -55,6 +55,10 @@ export default async function BudgetsPage() {
     (category) => category.type === "expense"
   );
 
+  const savingCategories = categories.filter(
+    (category) => category.type === "saving"
+  );
+
   // ==========================================
   // User Interface
   // ==========================================
@@ -93,6 +97,7 @@ export default async function BudgetsPage() {
 
           <BudgetsManager
             expenseCategories={expenseCategories}
+            savingCategories={savingCategories}
             initialBudgets={budgets}
             householdMembers={householdMembers}
             initialIncome={income}
