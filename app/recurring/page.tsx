@@ -19,7 +19,7 @@ import { getRecurringExpenses } from "@/app/actions/recurringExpenses";
 // Components
 // ==========================================
 
-import LogoutButton from "@/components/LogoutButton";
+import Nav from "@/components/Nav";
 import RecurringExpensesManager from "@/components/RecurringExpensesManager";
 
 export default async function RecurringPage() {
@@ -55,34 +55,25 @@ export default async function RecurringPage() {
   // ==========================================
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-surface-page">
       {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">KafoJimein</h1>
-            <p className="text-sm text-slate-500">Family finance</p>
-          </div>
-
-          <LogoutButton />
-        </div>
-      </header>
+      <Nav />
 
       <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Page heading */}
         <section className="mb-8">
           <Link
             href="/"
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            className="text-sm font-medium text-accent-deep hover:text-accent"
           >
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
             Recurring expenses
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-secondary">
             Standing monthly expenses like rent and subscriptions.
           </p>
         </section>

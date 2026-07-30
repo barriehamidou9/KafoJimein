@@ -20,7 +20,7 @@ import { getHouseholdIncome } from "@/app/actions/householdIncome";
 // Components
 // ==========================================
 
-import LogoutButton from "@/components/LogoutButton";
+import Nav from "@/components/Nav";
 
 // Owns the reactive total + list of BudgetRow items.
 import BudgetsManager from "@/components/BudgetsManager";
@@ -60,42 +60,33 @@ export default async function BudgetsPage() {
   // ==========================================
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-surface-page">
       {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">KafoJimein</h1>
-            <p className="text-sm text-slate-500">Family finance</p>
-          </div>
-
-          <LogoutButton />
-        </div>
-      </header>
+      <Nav />
 
       <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Page heading */}
         <section className="mb-8">
           <Link
             href="/"
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            className="text-sm font-medium text-accent-deep hover:text-accent"
           >
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
             Budgets
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-secondary">
             Set a spending limit for each expense category.
           </p>
         </section>
 
         {/* Budgets per expense category */}
-        <section className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
           {!isAdmin && (
-            <p className="mb-4 text-sm text-slate-500">
+            <p className="mb-4 text-sm text-secondary">
               Only household admins can manage budgets.
             </p>
           )}

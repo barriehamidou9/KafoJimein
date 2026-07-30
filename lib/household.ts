@@ -81,6 +81,19 @@ export function startOfMonthUtc(monthOffset: number, timeZone: string): Date {
   return new Date(naiveUtc - offset2);
 }
 
+// The current calendar month's [start, end) as UTC instants, in the
+// household's timezone — the one place this boundary is computed, so
+// every caller (budget overview, month summary, ...) agrees exactly.
+export function getCurrentMonthRange(timeZone: string): {
+  start: Date;
+  end: Date;
+} {
+  return {
+    start: startOfMonthUtc(0, timeZone),
+    end: startOfMonthUtc(1, timeZone),
+  };
+}
+
 // Today's date as the household's local calendar sees it right now —
 // year and month 1-indexed (month: 1 = January), matching the plain
 // integer convention recurring_expenses.last_confirmed_year/month use

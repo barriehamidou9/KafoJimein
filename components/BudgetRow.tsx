@@ -133,12 +133,12 @@ export default function BudgetRow({
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3">
-        <p className="font-medium text-slate-900">{category.name}</p>
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-border px-4 py-3">
+        <p className="font-medium text-primary">{category.name}</p>
 
-        <p className="text-slate-500">
+        <p className="text-secondary">
           {budget ? (
-            <span className="font-semibold text-slate-900">
+            <span className="font-semibold text-primary">
               ${Number(budget.amount).toFixed(2)}
             </span>
           ) : (
@@ -155,26 +155,26 @@ export default function BudgetRow({
         event.preventDefault();
         handleSave();
       }}
-      className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3"
+      className="flex items-center justify-between gap-4 rounded-xl border border-border px-4 py-3"
     >
-      <p className="font-medium text-slate-900">{category.name}</p>
+      <p className="font-medium text-primary">{category.name}</p>
 
       <div className="flex items-center gap-3">
         {/* Transient "Saved" / "Removed" confirmation. */}
         {status === "saved" && (
-          <span className="text-sm font-medium text-emerald-600">Saved</span>
+          <span className="text-sm font-medium text-accent-deep">Saved</span>
         )}
         {status === "removed" && (
-          <span className="text-sm font-medium text-slate-500">Removed</span>
+          <span className="text-sm font-medium text-secondary">Removed</span>
         )}
 
         {/* Clear error message if the action was rejected (e.g. non-admin). */}
         {error && (
-          <span className="text-sm font-medium text-rose-600">{error}</span>
+          <span className="text-sm font-medium text-danger">{error}</span>
         )}
 
         <div className="flex items-center gap-2">
-          <span className="text-slate-500">$</span>
+          <span className="text-secondary">$</span>
 
           <input
             type="number"
@@ -184,14 +184,14 @@ export default function BudgetRow({
             placeholder="0.00"
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
-            className="w-32 rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="w-32 rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
           />
         </div>
 
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+          className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
         >
           Save
         </button>
@@ -202,7 +202,7 @@ export default function BudgetRow({
             type="button"
             onClick={handleRemove}
             disabled={isSubmitting}
-            className="rounded-xl border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-600 transition hover:bg-rose-50 focus:outline-none focus:ring-4 focus:ring-rose-100 disabled:opacity-50"
+            className="rounded-xl border border-danger/30 px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10 focus:outline-none focus:ring-4 focus:ring-danger/20 disabled:opacity-50"
           >
             Remove
           </button>

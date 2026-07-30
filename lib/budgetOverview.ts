@@ -1,4 +1,4 @@
-import { HOUSEHOLD_TIME_ZONE, startOfMonthUtc } from "@/lib/household";
+import { HOUSEHOLD_TIME_ZONE, getCurrentMonthRange } from "@/lib/household";
 
 // Type-only imports: safe even though budgets.ts/budgetItems.ts have
 // "use server" at the top — type imports are erased at compile time, so
@@ -28,8 +28,9 @@ export function computeBudgetOverview(
     budgets.map((budget) => budget.category_id)
   );
 
-  const monthStart = startOfMonthUtc(0, HOUSEHOLD_TIME_ZONE);
-  const monthEnd = startOfMonthUtc(1, HOUSEHOLD_TIME_ZONE);
+  const { start: monthStart, end: monthEnd } = getCurrentMonthRange(
+    HOUSEHOLD_TIME_ZONE
+  );
 
   const spentByCategoryId = new Map<string, number>();
 
@@ -74,6 +75,7 @@ export function computeBudgetOverview(
         categoryName: category.name,
         budgetAmount: Number(budget.amount),
         spentAmount: spentByCategoryId.get(budget.category_id) ?? 0,
+        isFixed: category.is_fixed,
       };
     })
     .filter((item): item is BudgetOverviewItem => item !== null);

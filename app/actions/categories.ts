@@ -24,6 +24,7 @@ export type Category = {
   type: string;
   color: string;
   icon: string | null;
+  is_fixed: boolean;
   created_at: string;
 };
 

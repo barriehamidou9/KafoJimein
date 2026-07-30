@@ -80,7 +80,7 @@ export default function AddRecurringExpenseForm({
       <div className="flex flex-col gap-2">
         <label
           htmlFor="amount"
-          className="text-sm font-medium text-slate-700"
+          className="text-sm font-medium text-secondary"
         >
           Amount
         </label>
@@ -94,7 +94,7 @@ export default function AddRecurringExpenseForm({
           onChange={(event) => setAmount(event.target.value)}
           min="0"
           step="0.01"
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
           required
         />
       </div>
@@ -106,7 +106,7 @@ export default function AddRecurringExpenseForm({
       <div className="flex flex-col gap-2">
         <label
           htmlFor="category_id"
-          className="text-sm font-medium text-slate-700"
+          className="text-sm font-medium text-secondary"
         >
           Category
         </label>
@@ -116,7 +116,7 @@ export default function AddRecurringExpenseForm({
           name="category_id"
           value={categoryId}
           onChange={(event) => setCategoryId(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
           required
         >
           {categories.map((category) => (
@@ -134,7 +134,7 @@ export default function AddRecurringExpenseForm({
       <div className="flex flex-col gap-2">
         <label
           htmlFor="paid_by"
-          className="text-sm font-medium text-slate-700"
+          className="text-sm font-medium text-secondary"
         >
           Paid by
         </label>
@@ -144,7 +144,7 @@ export default function AddRecurringExpenseForm({
           name="paid_by"
           value={paidBy}
           onChange={(event) => setPaidBy(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
         >
           {householdMembers.map((member) => (
             <option key={member.userId} value={member.userId}>
@@ -161,7 +161,7 @@ export default function AddRecurringExpenseForm({
       <div className="flex flex-col gap-2">
         <label
           htmlFor="day_of_month"
-          className="text-sm font-medium text-slate-700"
+          className="text-sm font-medium text-secondary"
         >
           Day of month due
         </label>
@@ -175,7 +175,7 @@ export default function AddRecurringExpenseForm({
           onChange={(event) => setDayOfMonth(event.target.value)}
           min="1"
           max="28"
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
           required
         />
       </div>
@@ -185,7 +185,7 @@ export default function AddRecurringExpenseForm({
       ========================================== */}
 
       {error && (
-        <p className="text-sm font-medium text-rose-600">{error}</p>
+        <p className="text-sm font-medium text-danger">{error}</p>
       )}
 
       {/* ==========================================
@@ -195,7 +195,7 @@ export default function AddRecurringExpenseForm({
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+        className="mt-1 rounded-xl bg-accent px-4 py-3 font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
       >
         Add recurring expense
       </button>

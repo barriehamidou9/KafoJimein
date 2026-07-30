@@ -70,7 +70,7 @@ export default function DeletedItemsList({
 
   if (items.length === 0) {
     return (
-      <p className="text-sm text-slate-400">
+      <p className="text-sm text-muted">
         No recently deleted transactions.
       </p>
     );
@@ -81,12 +81,12 @@ export default function DeletedItemsList({
       {items.map((item) => (
         <div
           key={item.id}
-          className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3"
+          className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
         >
           <div>
-            <p className="font-medium text-slate-900">{item.title}</p>
+            <p className="font-medium text-primary">{item.title}</p>
 
-            <p className="text-sm text-slate-500">
+            <p className="text-sm text-secondary">
               <span className="capitalize">{item.type}</span>
               {" · "}
               Deleted{" "}
@@ -94,7 +94,7 @@ export default function DeletedItemsList({
             </p>
 
             {errorId === item.id && error && (
-              <p className="mt-1 text-sm font-medium text-rose-600">
+              <p className="mt-1 text-sm font-medium text-danger">
                 {error}
               </p>
             )}
@@ -104,8 +104,8 @@ export default function DeletedItemsList({
             <p
               className={
                 item.type === "income"
-                  ? "font-semibold text-emerald-600"
-                  : "font-semibold text-rose-600"
+                  ? "font-semibold text-accent-deep"
+                  : "font-semibold text-danger"
               }
             >
               {item.type === "income" ? "+" : "-"}$
@@ -116,7 +116,7 @@ export default function DeletedItemsList({
               type="button"
               onClick={() => handleRestore(item.id)}
               disabled={restoringId === item.id}
-              className="rounded-xl bg-emerald-600 px-3 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+              className="rounded-xl bg-accent px-3 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
             >
               Restore
             </button>

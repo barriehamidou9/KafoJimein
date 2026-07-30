@@ -95,20 +95,20 @@ export default function DueRecurringExpenseCard({
   // ==========================================
 
   return (
-    <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3">
+    <div className="rounded-xl border border-warn/30 bg-warn/10 px-4 py-3">
       <div className="flex items-center justify-between gap-4">
         <div>
-          <p className="font-medium text-slate-900">
+          <p className="font-medium text-primary">
             {category?.name ?? "Unknown category"}
           </p>
 
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-secondary">
             Paid by {paidByMember?.displayName ?? "Unknown"}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
-          <span className="text-slate-500">$</span>
+          <span className="text-secondary">$</span>
 
           <input
             type="number"
@@ -117,13 +117,13 @@ export default function DueRecurringExpenseCard({
             value={amount}
             onChange={(event) => setAmount(event.target.value)}
             disabled={isSubmitting}
-            className="w-24 rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100 disabled:opacity-50"
+            className="w-24 rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
           />
         </div>
       </div>
 
       {error && (
-        <p className="mt-2 text-sm font-medium text-rose-600">{error}</p>
+        <p className="mt-2 text-sm font-medium text-danger">{error}</p>
       )}
 
       <div className="mt-3 flex gap-2">
@@ -131,7 +131,7 @@ export default function DueRecurringExpenseCard({
           type="button"
           onClick={handleConfirm}
           disabled={isSubmitting}
-          className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+          className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
         >
           Confirm
         </button>
@@ -140,7 +140,7 @@ export default function DueRecurringExpenseCard({
           type="button"
           onClick={handleSkip}
           disabled={isSubmitting}
-          className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+          className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-secondary transition hover:bg-surface-track disabled:opacity-50"
         >
           Skip
         </button>

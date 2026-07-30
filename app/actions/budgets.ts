@@ -48,6 +48,7 @@ export type BudgetOverviewItem = {
   categoryName: string;
   budgetAmount: number;
   spentAmount: number;
+  isFixed: boolean;
 };
 
 // ==========================================

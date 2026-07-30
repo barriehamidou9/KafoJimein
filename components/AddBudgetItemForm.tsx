@@ -86,28 +86,22 @@ export default function AddBudgetItemForm({
 
   // ==========================================
   // User Interface
-  // Display the budget entry form.
-  // ==========================================
-
-    // ==========================================
-  // User Interface
   // Display the transaction entry form.
   // ==========================================
 
+  // Shared by every field below, so the five inputs/selects stay visually
+  // identical without repeating the same string five times.
+  const fieldClass =
+    "h-[38px] w-full rounded-lg border-[0.5px] border-border bg-surface-card px-3 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent";
+
   return (
-    <form
-      action={handleSubmit}
-      className="flex flex-col gap-5"
-    >
+    <form action={handleSubmit} className="flex flex-col gap-4">
       {/* ==========================================
-          Transaction Title
+          Transaction Title (full width)
       ========================================== */}
 
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="title"
-          className="text-sm font-medium text-slate-700"
-        >
+      <div className="flex flex-col gap-1.5">
+        <label htmlFor="title" className="text-sm text-secondary">
           Title
         </label>
 
@@ -118,133 +112,115 @@ export default function AddBudgetItemForm({
           placeholder="e.g. Costco run, July rent payment"
           value={title}
           onChange={(event) => setTitle(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+          className={fieldClass}
           required
         />
       </div>
 
       {/* ==========================================
-          Transaction Amount
+          Amount + Type
       ========================================== */}
 
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="amount"
-          className="text-sm font-medium text-slate-700"
-        >
-          Amount
-        </label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="amount" className="text-sm text-secondary">
+            Amount
+          </label>
 
-        <input
-          id="amount"
-          name="amount"
-          type="number"
-          placeholder="0.00"
-          value={amount}
-          onChange={(event) => setAmount(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-          min="0"
-          step="0.01"
-          required
-        />
+          <input
+            id="amount"
+            name="amount"
+            type="number"
+            placeholder="0.00"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            className={fieldClass}
+            min="0"
+            step="0.01"
+            required
+          />
+        </div>
+
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="type" className="text-sm text-secondary">
+            Type
+          </label>
+
+          <select
+            id="type"
+            name="type"
+            value={type}
+            onChange={(event) => handleTypeChange(event.target.value)}
+            className={fieldClass}
+          >
+            <option value="expense">Expense</option>
+            <option value="income">Income</option>
+            <option value="saving">Saving</option>
+          </select>
+        </div>
       </div>
 
       {/* ==========================================
-          Transaction Type
+          Category + Paid by
       ========================================== */}
 
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="type"
-          className="text-sm font-medium text-slate-700"
-        >
-          Type
-        </label>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="category_id" className="text-sm text-secondary">
+            Category
+          </label>
 
-        <select
-          id="type"
-          name="type"
-          value={type}
-          onChange={(event) => handleTypeChange(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-        >
-          <option value="expense">Expense</option>
-          <option value="income">Income</option>
-          <option value="saving">Saving</option>
-        </select>
-      </div>
+          <select
+            id="category_id"
+            name="category_id"
+            value={categoryId}
+            onChange={(event) => setCategoryId(event.target.value)}
+            className={fieldClass}
+          >
+            <option value="">No category</option>
+            {filteredCategories.map((category) => (
+              <option key={category.id} value={category.id}>
+                {category.name}
+              </option>
+            ))}
+          </select>
+        </div>
 
-      {/* ==========================================
-          Transaction Category
-      ========================================== */}
+        <div className="flex flex-col gap-1.5">
+          <label htmlFor="paid_by" className="text-sm text-secondary">
+            Paid by
+          </label>
 
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="category_id"
-          className="text-sm font-medium text-slate-700"
-        >
-          Category
-        </label>
-
-        <select
-          id="category_id"
-          name="category_id"
-          value={categoryId}
-          onChange={(event) => setCategoryId(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-        >
-          <option value="">No category</option>
-          {filteredCategories.map((category) => (
-            <option key={category.id} value={category.id}>
-              {category.name}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* ==========================================
-          Paid By
-      ========================================== */}
-
-      <div className="flex flex-col gap-2">
-        <label
-          htmlFor="paid_by"
-          className="text-sm font-medium text-slate-700"
-        >
-          Paid by
-        </label>
-
-        <select
-          id="paid_by"
-          name="paid_by"
-          value={paidBy}
-          onChange={(event) => setPaidBy(event.target.value)}
-          className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
-        >
-          {householdMembers.map((member) => (
-            <option key={member.userId} value={member.userId}>
-              {member.displayName}
-            </option>
-          ))}
-        </select>
+          <select
+            id="paid_by"
+            name="paid_by"
+            value={paidBy}
+            onChange={(event) => setPaidBy(event.target.value)}
+            className={fieldClass}
+          >
+            {householdMembers.map((member) => (
+              <option key={member.userId} value={member.userId}>
+                {member.displayName}
+              </option>
+            ))}
+          </select>
+        </div>
       </div>
 
       {/* ==========================================
           Error
       ========================================== */}
 
-      {error && (
-        <p className="text-sm font-medium text-rose-600">{error}</p>
-      )}
+      {error && <p className="text-sm font-medium text-danger">{error}</p>}
 
       {/* ==========================================
-          Submit Button
+          Submit Button — the one accent-filled button on the page.
       ========================================== */}
 
       <button
         type="submit"
         disabled={isSubmitting}
-        className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+        className="mt-1 h-[38px] rounded-lg bg-accent text-sm font-semibold text-on-accent transition hover:bg-accent-deep disabled:opacity-50"
       >
         Add transaction
       </button>

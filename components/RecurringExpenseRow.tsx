@@ -127,20 +127,20 @@ export default function RecurringExpenseRow({
 
   if (!isAdmin) {
     return (
-      <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3">
+      <div className="flex items-center justify-between gap-4 rounded-xl border border-border px-4 py-3">
         <div>
-          <p className="font-medium text-slate-900">
+          <p className="font-medium text-primary">
             {category?.name ?? "Unknown category"}
           </p>
 
-          <p className="text-sm text-slate-500">
+          <p className="text-sm text-secondary">
             Paid by {paidByMember?.displayName ?? "Unknown"}
             {" · "}
             Due on day {expense.day_of_month}
           </p>
         </div>
 
-        <p className="font-semibold text-slate-900">
+        <p className="font-semibold text-primary">
           ${Number(expense.amount).toFixed(2)}
         </p>
       </div>
@@ -159,7 +159,7 @@ export default function RecurringExpenseRow({
           event.preventDefault();
           handleSave();
         }}
-        className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+        className="rounded-xl border border-border bg-surface-track px-4 py-3"
       >
         <div className="flex flex-col gap-3">
           <div className="flex flex-wrap gap-3">
@@ -170,14 +170,14 @@ export default function RecurringExpenseRow({
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0.00"
-              className="w-28 rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="w-28 rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
               required
             />
 
             <select
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
             >
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
@@ -189,7 +189,7 @@ export default function RecurringExpenseRow({
             <select
               value={paidBy}
               onChange={(event) => setPaidBy(event.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
             >
               {householdMembers.map((member) => (
                 <option key={member.userId} value={member.userId}>
@@ -205,20 +205,20 @@ export default function RecurringExpenseRow({
               value={dayOfMonth}
               onChange={(event) => setDayOfMonth(event.target.value)}
               placeholder="Day"
-              className="w-20 rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className="w-20 rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
               required
             />
           </div>
 
           {error && (
-            <p className="text-sm font-medium text-rose-600">{error}</p>
+            <p className="text-sm font-medium text-danger">{error}</p>
           )}
 
           <div className="flex gap-2">
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+              className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
             >
               Save
             </button>
@@ -227,7 +227,7 @@ export default function RecurringExpenseRow({
               type="button"
               onClick={handleCancelEdit}
               disabled={isSubmitting}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+              className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-secondary transition hover:bg-surface-track disabled:opacity-50"
             >
               Cancel
             </button>
@@ -243,32 +243,32 @@ export default function RecurringExpenseRow({
   // ==========================================
 
   return (
-    <div className="flex items-center justify-between gap-4 rounded-xl border border-slate-100 px-4 py-3">
+    <div className="flex items-center justify-between gap-4 rounded-xl border border-border px-4 py-3">
       <div>
-        <p className="font-medium text-slate-900">
+        <p className="font-medium text-primary">
           {category?.name ?? "Unknown category"}
         </p>
 
-        <p className="text-sm text-slate-500">
+        <p className="text-sm text-secondary">
           Paid by {paidByMember?.displayName ?? "Unknown"}
           {" · "}
           Due on day {expense.day_of_month}
         </p>
 
         {error && (
-          <p className="mt-1 text-sm font-medium text-rose-600">{error}</p>
+          <p className="mt-1 text-sm font-medium text-danger">{error}</p>
         )}
       </div>
 
       <div className="flex items-center gap-3">
-        <p className="font-semibold text-slate-900">
+        <p className="font-semibold text-primary">
           ${Number(expense.amount).toFixed(2)}
         </p>
 
         <button
           type="button"
           onClick={handleStartEdit}
-          className="text-xs font-medium text-slate-500 hover:text-emerald-600"
+          className="text-xs font-medium text-secondary hover:text-accent-deep"
         >
           Edit
         </button>
@@ -277,7 +277,7 @@ export default function RecurringExpenseRow({
           type="button"
           onClick={handleDelete}
           disabled={isSubmitting}
-          className="text-xs font-medium text-rose-600 hover:text-rose-700 disabled:opacity-50"
+          className="text-xs font-medium text-danger hover:text-danger disabled:opacity-50"
         >
           Delete
         </button>

@@ -80,19 +80,19 @@ export default function RecurringExpensesManager({
     >
       {/* Add recurring expense — admins only */}
       {isAdmin && (
-        <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">
+            <h3 className="text-lg font-semibold text-primary">
               Add recurring expense
             </h3>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-secondary">
               Create a new standing monthly expense.
             </p>
           </div>
 
           {expenseCategories.length === 0 ? (
-            <p className="text-sm text-slate-400">
+            <p className="text-sm text-muted">
               No expense categories yet. Add one on the Categories page
               first.
             </p>
@@ -108,25 +108,25 @@ export default function RecurringExpensesManager({
       )}
 
       {/* Existing recurring expenses */}
-      <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+      <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
         <div className="mb-6">
-          <h3 className="text-lg font-semibold text-slate-900">
+          <h3 className="text-lg font-semibold text-primary">
             Recurring expenses
           </h3>
 
-          <p className="mt-1 text-sm text-slate-500">
+          <p className="mt-1 text-sm text-secondary">
             Your household&apos;s standing monthly expenses.
           </p>
         </div>
 
         {!isAdmin && (
-          <p className="mb-4 text-sm text-slate-500">
+          <p className="mb-4 text-sm text-secondary">
             Only household admins can manage recurring expenses.
           </p>
         )}
 
         {expenses.length === 0 ? (
-          <p className="text-sm text-slate-400">No recurring expenses yet.</p>
+          <p className="text-sm text-muted">No recurring expenses yet.</p>
         ) : (
           <div className="space-y-3">
             {expenses.map((expense) => (

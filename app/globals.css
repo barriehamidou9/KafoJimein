@@ -1,26 +1,84 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* ==========================================
+     Semantic color tokens
+     Raw values live here; @theme inline below maps them into Tailwind's
+     color namespace so components use names (bg-surface-card,
+     text-accent, ...) instead of hardcoded hex. Dark values live in the
+     .dark block further down, under the same names, so components never
+     need to know which theme is active.
+  ========================================== */
+
+  --surface-page: #f0efea;
+  --surface-card: #fbfaf7;
+  --surface-track: #e7e5de;
+  --border: rgba(0, 0, 0, 0.08);
+  --text-primary: #1a1a19;
+  --text-secondary: #5f5e5a;
+  --text-muted: #8a8983;
+  --accent: #1d9e75;
+  --accent-deep: #0f6e56;
+  --warn: #ef9f27;
+  --danger: #a32d2d;
+
+  /* Saving-type transactions/categories: a calm indigo, distinct from
+     both the red of expense and the green of income/accent — so it
+     can't be mistaken for either at a glance. Text-only usage, no fill
+     variant needed yet. */
+  --saving: #4c5fd1;
+
+  /* Label color for text sitting on a solid --accent fill (e.g. the "Add
+     transaction" button). White reads fine on the light-mode accent, but
+     fails contrast on the brighter dark-mode accent below, so the label
+     color flips per-theme instead of being hardcoded white at the call
+     site. */
+  --on-accent: #ffffff;
+}
+
+/* Dark theme overrides, applied via a `dark` class on <html> (toggled by
+   ThemeToggle.tsx, set before first paint by the inline script in
+   layout.tsx to avoid a light-mode flash). Every name here mirrors :root
+   above 1:1. */
+.dark {
+  --surface-page: #1a1917;
+  --surface-card: #232320;
+  --surface-track: #302f2b;
+  --border: rgba(255, 255, 255, 0.1);
+  --text-primary: #eceae4;
+  --text-secondary: #a8a69e;
+  --text-muted: #74726b;
+  --accent: #2fb88a;
+  --accent-deep: #5dcaa5;
+  --warn: #e8a63c;
+  --danger: #e06b6b;
+  --saving: #8fa0ff;
+  --on-accent: #1a1917;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
-}
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+  /* Semantic color tokens, exposed as Tailwind utilities (bg-*, text-*,
+     border-*, etc. are all generated automatically for each name below). */
+  --color-surface-page: var(--surface-page);
+  --color-surface-card: var(--surface-card);
+  --color-surface-track: var(--surface-track);
+  --color-border: var(--border);
+  --color-primary: var(--text-primary);
+  --color-secondary: var(--text-secondary);
+  --color-muted: var(--text-muted);
+  --color-accent: var(--accent);
+  --color-accent-deep: var(--accent-deep);
+  --color-warn: var(--warn);
+  --color-danger: var(--danger);
+  --color-saving: var(--saving);
+  --color-on-accent: var(--on-accent);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
+  background: var(--surface-page);
+  color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }

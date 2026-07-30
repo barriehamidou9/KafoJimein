@@ -17,7 +17,7 @@ import { getMyProfile } from "@/app/actions/profiles";
 // Components
 // ==========================================
 
-import LogoutButton from "@/components/LogoutButton";
+import Nav from "@/components/Nav";
 import DisplayNameEditor from "@/components/DisplayNameEditor";
 
 export default async function SettingsPage() {
@@ -42,47 +42,38 @@ export default async function SettingsPage() {
   // ==========================================
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-surface-page">
       {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">KafoJimein</h1>
-            <p className="text-sm text-slate-500">Family finance</p>
-          </div>
-
-          <LogoutButton />
-        </div>
-      </header>
+      <Nav />
 
       <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Page heading */}
         <section className="mb-8">
           <Link
             href="/"
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            className="text-sm font-medium text-accent-deep hover:text-accent"
           >
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
             Settings
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-secondary">
             Set how your name appears to other household members, e.g. in
             &quot;Paid by&quot;.
           </p>
         </section>
 
         {/* Display name */}
-        <section className="max-w-md rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+        <section className="max-w-md rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
           <div className="mb-6">
-            <h3 className="text-lg font-semibold text-slate-900">
+            <h3 className="text-lg font-semibold text-primary">
               Display name
             </h3>
 
-            <p className="mt-1 text-sm text-slate-500">
+            <p className="mt-1 text-sm text-secondary">
               Shown to your household instead of your email.
             </p>
           </div>

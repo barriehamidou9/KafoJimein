@@ -148,6 +148,11 @@ export default function TransactionRow({
     }
   }
 
+  // Shared by every edit-mode input/select, same token treatment as
+  // AddBudgetItemForm's fieldClass.
+  const fieldClass =
+    "h-[38px] rounded-lg border-[0.5px] border-border bg-surface-card px-3 text-sm text-primary outline-none transition focus:border-accent";
+
   // ==========================================
   // User Interface
   // Edit mode
@@ -160,7 +165,7 @@ export default function TransactionRow({
           event.preventDefault();
           handleSave();
         }}
-        className="rounded-xl border border-slate-200 bg-slate-50 px-4 py-3"
+        className="py-3"
       >
         <div className="flex flex-col gap-3">
           <input
@@ -168,7 +173,7 @@ export default function TransactionRow({
             value={title}
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Title"
-            className="w-full rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className={`${fieldClass} w-full`}
             required
           />
 
@@ -180,14 +185,14 @@ export default function TransactionRow({
               value={amount}
               onChange={(event) => setAmount(event.target.value)}
               placeholder="0.00"
-              className="w-28 rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className={`${fieldClass} w-28`}
               required
             />
 
             <select
               value={type}
               onChange={(event) => handleTypeChange(event.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className={fieldClass}
             >
               <option value="expense">Expense</option>
               <option value="income">Income</option>
@@ -197,7 +202,7 @@ export default function TransactionRow({
             <select
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className={fieldClass}
             >
               <option value="">No category</option>
               {filteredCategories.map((category) => (
@@ -210,7 +215,7 @@ export default function TransactionRow({
             <select
               value={paidBy}
               onChange={(event) => setPaidBy(event.target.value)}
-              className="rounded-xl border border-slate-300 bg-white px-3 py-2 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+              className={fieldClass}
             >
               {householdMembers.map((member) => (
                 <option key={member.userId} value={member.userId}>
@@ -221,14 +226,16 @@ export default function TransactionRow({
           </div>
 
           {error && (
-            <p className="text-sm font-medium text-rose-600">{error}</p>
+            <p className="text-sm font-medium text-danger">{error}</p>
           )}
 
           <div className="flex gap-2">
+            {/* Not accent-filled: "Add transaction" is the only filled
+                button on the page. */}
             <button
               type="submit"
               disabled={isSubmitting}
-              className="rounded-xl bg-emerald-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+              className="rounded-lg border-[0.5px] border-border bg-surface-card px-4 py-2 text-sm font-semibold text-primary transition hover:border-accent disabled:opacity-50"
             >
               Save
             </button>
@@ -237,7 +244,7 @@ export default function TransactionRow({
               type="button"
               onClick={handleCancelEdit}
               disabled={isSubmitting}
-              className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+              className="rounded-lg px-4 py-2 text-sm font-medium text-muted transition hover:text-primary disabled:opacity-50"
             >
               Cancel
             </button>
@@ -252,50 +259,48 @@ export default function TransactionRow({
   // View mode
   // ==========================================
 
-  return (
-    <div className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3">
-      <div>
-        <p className="font-medium text-slate-900">{item.title}</p>
+  // Three distinct treatments: income is money in (positive, green),
+  // expense is money gone (negative, red), saving is money moved to a
+  // goal — still leaves checking (leading minus), but in its own color
+  // so it isn't mistaken for either.
+  const amountColorClass =
+    item.type === "expense"
+      ? "text-danger"
+      : item.type === "saving"
+        ? "text-saving"
+        : "text-accent-deep";
+  const showMinus = item.type === "expense" || item.type === "saving";
 
-        <p className="text-sm text-slate-500">
-          <span className="capitalize">{item.type}</span>
-          {" · "}
+  return (
+    <div className="flex items-center justify-between py-3">
+      <div>
+        <p className="text-[15px] text-primary">{item.title}</p>
+
+        <p className="mt-0.5 text-xs text-muted">
           {formatHouseholdDateTime(item.created_at)}
-          {paidByMember && (
-            <>
-              {" · "}
-              Paid by {paidByMember.displayName}
-            </>
-          )}
+          {paidByMember && <> · Paid by {paidByMember.displayName}</>}
         </p>
 
         {error && (
-          <p className="mt-1 text-sm font-medium text-rose-600">{error}</p>
+          <p className="mt-1 text-sm font-medium text-danger">{error}</p>
         )}
       </div>
 
       <div className="flex flex-col items-end gap-1">
-        <p
-          className={
-            item.type === "income"
-              ? "font-semibold text-emerald-600"
-              : "font-semibold text-rose-600"
-          }
-        >
-          {item.type === "income" ? "+" : "-"}$
-          {Number(item.amount).toFixed(2)}
+        <p className={`text-sm tabular-nums ${amountColorClass}`}>
+          {showMinus ? "-" : "+"}${Number(item.amount).toFixed(2)}
         </p>
 
         <div className="flex items-center gap-3">
           {isConfirmingDelete ? (
             <span className="flex items-center gap-2 text-xs">
-              <span className="text-slate-500">Are you sure?</span>
+              <span className="text-muted">Are you sure?</span>
 
               <button
                 type="button"
                 onClick={handleDelete}
                 disabled={isSubmitting}
-                className="font-semibold text-rose-600 hover:text-rose-700 disabled:opacity-50"
+                className="font-semibold text-danger hover:text-danger disabled:opacity-50"
               >
                 Yes
               </button>
@@ -304,7 +309,7 @@ export default function TransactionRow({
                 type="button"
                 onClick={() => setIsConfirmingDelete(false)}
                 disabled={isSubmitting}
-                className="font-medium text-slate-500 hover:text-slate-700 disabled:opacity-50"
+                className="font-medium text-muted hover:text-primary disabled:opacity-50"
               >
                 No
               </button>
@@ -314,7 +319,7 @@ export default function TransactionRow({
               <button
                 type="button"
                 onClick={handleStartEdit}
-                className="text-xs font-medium text-slate-500 hover:text-emerald-600"
+                className="text-xs text-muted transition hover:text-primary"
               >
                 Edit
               </button>
@@ -322,7 +327,7 @@ export default function TransactionRow({
               <button
                 type="button"
                 onClick={() => setIsConfirmingDelete(true)}
-                className="text-xs font-medium text-rose-600 hover:text-rose-700"
+                className="text-xs text-muted transition hover:text-primary"
               >
                 Delete
               </button>

@@ -121,14 +121,14 @@ export default function BudgetsManager({
     <>
       {/* Income */}
       <div className="mb-8">
-        <h3 className="text-lg font-semibold text-slate-900">Income</h3>
+        <h3 className="text-lg font-semibold text-primary">Income</h3>
 
-        <p className="mt-1 text-sm text-slate-500">
+        <p className="mt-1 text-sm text-secondary">
           Each household member&apos;s income.
         </p>
 
         {!isAdmin && (
-          <p className="mt-4 text-sm text-slate-500">
+          <p className="mt-4 text-sm text-secondary">
             Only household admins can manage income.
           </p>
         )}
@@ -146,8 +146,8 @@ export default function BudgetsManager({
           ))}
         </div>
 
-        <div className="mt-4 rounded-xl bg-emerald-50 px-4 py-3">
-          <p className="text-sm font-medium text-emerald-700">
+        <div className="mt-4 rounded-xl bg-accent/10 px-4 py-3">
+          <p className="text-sm font-medium text-accent-deep">
             Total household income:{" "}
             <span className="font-semibold">${totalIncome.toFixed(2)}</span>
           </p>
@@ -156,11 +156,11 @@ export default function BudgetsManager({
 
       {/* Budgets per expense category */}
       {expenseCategories.length === 0 ? (
-        <p className="text-sm text-slate-400">
+        <p className="text-sm text-muted">
           No expense categories yet.{" "}
           <Link
             href="/categories"
-            className="font-medium text-emerald-600 hover:text-emerald-700"
+            className="font-medium text-accent-deep hover:text-accent"
           >
             Add one
           </Link>
@@ -170,8 +170,8 @@ export default function BudgetsManager({
         <>
           {/* Total across all budgeted expense categories, compared
               against income when any has been set. */}
-          <div className="mb-6 rounded-xl bg-emerald-50 px-4 py-3">
-            <p className="text-sm font-medium text-emerald-700">
+          <div className="mb-6 rounded-xl bg-accent/10 px-4 py-3">
+            <p className="text-sm font-medium text-accent-deep">
               {hasIncome ? (
                 <>
                   Budgeted:{" "}

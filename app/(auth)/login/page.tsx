@@ -4,7 +4,6 @@ import { useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
-import SummaryCard from "@/components/SummaryCard";
 
 export default function LoginPage() {
   const [email, setEmail] = useState("");

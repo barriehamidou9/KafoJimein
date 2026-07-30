@@ -18,7 +18,7 @@ import { getCurrentUserRole } from "@/app/actions/households";
 // Components
 // ==========================================
 
-import LogoutButton from "@/components/LogoutButton";
+import Nav from "@/components/Nav";
 
 const CATEGORY_TYPES = ["income", "expense", "saving"] as const;
 
@@ -49,34 +49,25 @@ export default async function CategoriesPage() {
   // ==========================================
 
   return (
-    <main className="min-h-screen bg-slate-50">
+    <main className="min-h-screen bg-surface-page">
       {/* Navigation */}
-      <header className="border-b border-slate-200 bg-white">
-        <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">KafoJimein</h1>
-            <p className="text-sm text-slate-500">Family finance</p>
-          </div>
-
-          <LogoutButton />
-        </div>
-      </header>
+      <Nav />
 
       <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Page heading */}
         <section className="mb-8">
           <Link
             href="/"
-            className="text-sm font-medium text-emerald-600 hover:text-emerald-700"
+            className="text-sm font-medium text-accent-deep hover:text-accent"
           >
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-slate-900">
+          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
             Categories
           </h2>
 
-          <p className="mt-2 text-slate-500">
+          <p className="mt-2 text-secondary">
             Organize your income, expenses, and savings.
           </p>
         </section>
@@ -88,13 +79,13 @@ export default async function CategoriesPage() {
         >
           {/* Add category — admins only */}
           {isAdmin && (
-            <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+            <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
               <div className="mb-6">
-                <h3 className="text-lg font-semibold text-slate-900">
+                <h3 className="text-lg font-semibold text-primary">
                   Add category
                 </h3>
 
-                <p className="mt-1 text-sm text-slate-500">
+                <p className="mt-1 text-sm text-secondary">
                   Create a new category to tag transactions.
                 </p>
               </div>
@@ -103,7 +94,7 @@ export default async function CategoriesPage() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="name"
-                    className="text-sm font-medium text-slate-700"
+                    className="text-sm font-medium text-secondary"
                   >
                     Name
                   </label>
@@ -113,7 +104,7 @@ export default async function CategoriesPage() {
                     name="name"
                     type="text"
                     placeholder="Example: Groceries"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition placeholder:text-slate-400 focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
                     required
                   />
                 </div>
@@ -121,7 +112,7 @@ export default async function CategoriesPage() {
                 <div className="flex flex-col gap-2">
                   <label
                     htmlFor="type"
-                    className="text-sm font-medium text-slate-700"
+                    className="text-sm font-medium text-secondary"
                   >
                     Type
                   </label>
@@ -130,7 +121,7 @@ export default async function CategoriesPage() {
                     id="type"
                     name="type"
                     defaultValue="expense"
-                    className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+                    className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
                   >
                     <option value="expense">Expense</option>
                     <option value="income">Income</option>
@@ -140,7 +131,7 @@ export default async function CategoriesPage() {
 
                 <button
                   type="submit"
-                  className="mt-1 rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200"
+                  className="mt-1 rounded-xl bg-accent px-4 py-3 font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20"
                 >
                   Add category
                 </button>
@@ -149,17 +140,17 @@ export default async function CategoriesPage() {
           )}
 
           {/* Existing categories, grouped by type */}
-          <div className="rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
+          <div className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
             <div className="mb-6">
-              <h3 className="text-lg font-semibold text-slate-900">
+              <h3 className="text-lg font-semibold text-primary">
                 Your categories
               </h3>
 
-              <p className="mt-1 text-sm text-slate-500">Grouped by type.</p>
+              <p className="mt-1 text-sm text-secondary">Grouped by type.</p>
             </div>
 
             {!isAdmin && (
-              <p className="mb-4 text-sm text-slate-500">
+              <p className="mb-4 text-sm text-secondary">
                 Only household admins can manage categories.
               </p>
             )}
@@ -172,12 +163,12 @@ export default async function CategoriesPage() {
 
                 return (
                   <div key={type}>
-                    <h4 className="mb-3 text-sm font-semibold capitalize text-slate-500">
+                    <h4 className="mb-3 text-sm font-semibold capitalize text-secondary">
                       {type}
                     </h4>
 
                     {items.length === 0 ? (
-                      <p className="text-sm text-slate-400">
+                      <p className="text-sm text-muted">
                         No categories yet.
                       </p>
                     ) : (
@@ -185,9 +176,9 @@ export default async function CategoriesPage() {
                         {items.map((category) => (
                           <div
                             key={category.id}
-                            className="flex items-center justify-between rounded-xl border border-slate-100 px-4 py-3"
+                            className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
                           >
-                            <p className="font-medium text-slate-900">
+                            <p className="font-medium text-primary">
                               {category.name}
                             </p>
 
@@ -201,7 +192,7 @@ export default async function CategoriesPage() {
 
                                 <button
                                   type="submit"
-                                  className="text-sm font-medium text-rose-600 hover:text-rose-700"
+                                  className="text-sm font-medium text-danger hover:text-danger"
                                 >
                                   Delete
                                 </button>

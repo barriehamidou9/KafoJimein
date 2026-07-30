@@ -94,7 +94,7 @@ export default function DisplayNameEditor({
         <div className="flex flex-col gap-2">
           <label
             htmlFor="display_name"
-            className="text-sm font-medium text-slate-700"
+            className="text-sm font-medium text-secondary"
           >
             Name
           </label>
@@ -105,23 +105,23 @@ export default function DisplayNameEditor({
             type="text"
             value={inputValue}
             onChange={(event) => setInputValue(event.target.value)}
-            className="w-full rounded-xl border border-slate-300 bg-white px-4 py-3 text-slate-900 outline-none transition focus:border-emerald-500 focus:ring-4 focus:ring-emerald-100"
+            className="w-full rounded-xl border border-border bg-surface-card px-4 py-3 text-primary outline-none transition focus:border-accent focus:ring-4 focus:ring-accent/20"
           />
 
-          <p className="text-xs text-slate-500">
+          <p className="text-xs text-secondary">
             Leave blank to show your email instead (in &quot;Paid by&quot;).
           </p>
         </div>
 
         {error && (
-          <p className="text-sm font-medium text-rose-600">{error}</p>
+          <p className="text-sm font-medium text-danger">{error}</p>
         )}
 
         <div className="flex gap-2">
           <button
             type="submit"
             disabled={isSubmitting}
-            className="rounded-xl bg-emerald-600 px-4 py-3 font-semibold text-white transition hover:bg-emerald-700 focus:outline-none focus:ring-4 focus:ring-emerald-200 disabled:opacity-50"
+            className="rounded-xl bg-accent px-4 py-3 font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
           >
             Save
           </button>
@@ -130,7 +130,7 @@ export default function DisplayNameEditor({
             type="button"
             onClick={handleCancel}
             disabled={isSubmitting}
-            className="rounded-xl border border-slate-300 px-4 py-3 font-semibold text-slate-700 transition hover:bg-slate-100 disabled:opacity-50"
+            className="rounded-xl border border-border px-4 py-3 font-semibold text-secondary transition hover:bg-surface-track disabled:opacity-50"
           >
             Cancel
           </button>
@@ -147,21 +147,21 @@ export default function DisplayNameEditor({
   return (
     <div className="flex items-center justify-between gap-4">
       <div>
-        <p className="text-slate-900">
+        <p className="text-primary">
           {displayName ?? (
-            <span className="text-slate-400">No display name set</span>
+            <span className="text-muted">No display name set</span>
           )}
         </p>
 
         {status === "saved" && (
-          <p className="mt-1 text-sm font-medium text-emerald-600">Saved</p>
+          <p className="mt-1 text-sm font-medium text-accent-deep">Saved</p>
         )}
       </div>
 
       <button
         type="button"
         onClick={handleStartEdit}
-        className="rounded-xl border border-slate-300 px-4 py-2 text-sm font-semibold text-slate-700 transition hover:bg-slate-100"
+        className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-secondary transition hover:bg-surface-track"
       >
         Edit
       </button>

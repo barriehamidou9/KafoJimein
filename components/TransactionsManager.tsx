@@ -36,11 +36,11 @@ export default function TransactionsManager({
   onDeleted,
 }: TransactionsManagerProps) {
   if (items.length === 0) {
-    return <p className="text-sm text-slate-400">No transactions yet.</p>;
+    return <p className="text-sm text-muted">No transactions yet.</p>;
   }
 
   return (
-    <div className="space-y-3">
+    <div className="divide-y-[0.5px] divide-border">
       {items.map((item) => (
         <TransactionRow
           key={item.id}
