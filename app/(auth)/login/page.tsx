@@ -1,15 +1,31 @@
 "use client";
 
-import { useState } from "react";
+import { Suspense, useState } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { useRouter } from "next/navigation";
 import { useSearchParams } from "next/navigation";
 
+// Isolated so only this part needs the Suspense boundary useSearchParams()
+// requires during static generation — next build fails on this page
+// otherwise ("useSearchParams() should be wrapped in a suspense
+// boundary"), even though it works fine in dev. The rest of the page
+// (form, submit handler) has no such requirement.
+function LoginMessage() {
+  const searchParams = useSearchParams();
+  const message = searchParams.get("message");
+
+  if (!message) {
+    return null;
+  }
+
+  return (
+    <p className="rounded bg-yellow-100 p-3 text-yellow-800">{message}</p>
+  );
+}
+
 export default function LoginPage() {
   const [email, setEmail] = useState("");
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const message = searchParams.get("message");
   const [password, setPassword] = useState("");
 
   async function handleSubmit(e: React.FormEvent) {
@@ -80,11 +96,10 @@ export default function LoginPage() {
           Enter
         </button>
       </form>
-      {message && (
-  <p className="rounded bg-yellow-100 p-3 text-yellow-800">
-    {message}
-  </p>
-)}
+
+      <Suspense fallback={null}>
+        <LoginMessage />
+      </Suspense>
     </main>
   );
 }
