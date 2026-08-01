@@ -113,7 +113,6 @@ export default function AddBudgetItemForm({
           value={title}
           onChange={(event) => setTitle(event.target.value)}
           className={fieldClass}
-          required
         />
       </div>
 
@@ -176,8 +175,11 @@ export default function AddBudgetItemForm({
             value={categoryId}
             onChange={(event) => setCategoryId(event.target.value)}
             className={fieldClass}
+            required
           >
-            <option value="">No category</option>
+            <option value="" disabled>
+              Select a category
+            </option>
             {filteredCategories.map((category) => (
               <option key={category.id} value={category.id}>
                 {category.name}

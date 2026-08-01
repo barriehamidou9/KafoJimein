@@ -174,7 +174,6 @@ export default function TransactionRow({
             onChange={(event) => setTitle(event.target.value)}
             placeholder="Title"
             className={`${fieldClass} w-full`}
-            required
           />
 
           <div className="flex flex-wrap gap-3">
@@ -203,8 +202,11 @@ export default function TransactionRow({
               value={categoryId}
               onChange={(event) => setCategoryId(event.target.value)}
               className={fieldClass}
+              required
             >
-              <option value="">No category</option>
+              <option value="" disabled>
+                Select a category
+              </option>
               {filteredCategories.map((category) => (
                 <option key={category.id} value={category.id}>
                   {category.name}
@@ -271,10 +273,18 @@ export default function TransactionRow({
         : "text-accent-deep";
   const showMinus = item.type === "expense" || item.type === "saving";
 
+  // Title is now optional (category is the required field instead) — fall
+  // back to the category name, and "Untitled" as a last resort for old
+  // rows that predate both rules and have neither set.
+  const categoryName = categories.find(
+    (category) => category.id === item.category_id
+  )?.name;
+  const displayTitle = item.title.trim() || categoryName || "Untitled";
+
   return (
     <div className="flex items-center justify-between py-3">
       <div>
-        <p className="text-[15px] text-primary">{item.title}</p>
+        <p className="text-[15px] text-primary">{displayTitle}</p>
 
         <p className="mt-0.5 text-xs text-muted">
           {formatHouseholdDateTime(item.created_at)}

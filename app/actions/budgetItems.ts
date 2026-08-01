@@ -77,13 +77,22 @@ export async function addBudgetItem(formData: FormData): Promise<BudgetItem> {
     throw new Error("User is not authenticated.");
   }
 
-  const householdId = await getHouseholdId(supabase, user.id);
-
-  const title = formData.get("title") as string;
+  // Trimmed and allowed to be blank — the transaction list falls back to
+  // the category name when title is empty, so "" is a valid stored value
+  // (the DB column is NOT NULL, so it's "" rather than null).
+  const title = (formData.get("title") as string).trim();
   const amount = Number(formData.get("amount"));
   const type = formData.get("type") as string;
   const rawCategoryId = formData.get("category_id") as string;
   const category_id = rawCategoryId ? rawCategoryId : null;
+
+  // The real enforcement — the category <select>'s `required` attribute
+  // is convenience only, bypassable via a direct request.
+  if (!category_id) {
+    throw new Error("Category is required.");
+  }
+
+  const householdId = await getHouseholdId(supabase, user.id);
 
   // Defaults to whoever is logged in if the form didn't specify a payer.
   const rawPaidBy = formData.get("paid_by") as string;
@@ -137,12 +146,19 @@ export async function updateBudgetItem(
   }
 
   const id = formData.get("id") as string;
-  const title = formData.get("title") as string;
+  // Trimmed and allowed to be blank — same reasoning as addBudgetItem.
+  const title = (formData.get("title") as string).trim();
   const amount = Number(formData.get("amount"));
   const type = formData.get("type") as string;
   const rawCategoryId = formData.get("category_id") as string;
   const category_id = rawCategoryId ? rawCategoryId : null;
   const paid_by = formData.get("paid_by") as string;
+
+  // The real enforcement — the category <select>'s `required` attribute
+  // is convenience only, bypassable via a direct request.
+  if (!category_id) {
+    throw new Error("Category is required.");
+  }
 
   const { data, error } = await supabase
     .from("budget_items")
