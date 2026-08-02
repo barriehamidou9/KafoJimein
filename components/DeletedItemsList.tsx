@@ -22,6 +22,12 @@ import {
 } from "@/app/actions/budgetItems";
 
 // ==========================================
+// Types
+// ==========================================
+
+import type { Category } from "@/app/actions/categories";
+
+// ==========================================
 // Household config
 // ==========================================
 
@@ -29,6 +35,9 @@ import { formatHouseholdDateTime } from "@/lib/household";
 
 type DeletedItemsListProps = {
   initialItems: BudgetItem[];
+  // For the title fallback below — same categories list every other
+  // transaction view (TransactionRow) already receives.
+  categories: Category[];
   // RLS (migration 0019) is the real enforcement for permanent delete —
   // this only hides the controls for non-admins, same convention as
   // every other role-aware page.
@@ -37,6 +46,7 @@ type DeletedItemsListProps = {
 
 export default function DeletedItemsList({
   initialItems,
+  categories,
   isAdmin,
 }: DeletedItemsListProps) {
   // ==========================================
@@ -189,13 +199,22 @@ export default function DeletedItemsList({
       )}
 
       <div className="space-y-3">
-        {items.map((item) => (
+        {items.map((item) => {
+          // Title is optional (category is the required field instead) —
+          // same fallback as TransactionRow's view mode: category name,
+          // then "Untitled" as a last resort.
+          const categoryName = categories.find(
+            (category) => category.id === item.category_id
+          )?.name;
+          const displayTitle = item.title.trim() || categoryName || "Untitled";
+
+          return (
           <div
             key={item.id}
             className="flex flex-wrap items-center justify-between gap-3 rounded-xl border border-border px-4 py-3"
           >
             <div>
-              <p className="font-medium text-primary">{item.title}</p>
+              <p className="font-medium text-primary">{displayTitle}</p>
 
               <p className="text-sm text-secondary">
                 <span className="capitalize">{item.type}</span>
@@ -271,7 +290,8 @@ export default function DeletedItemsList({
                 ))}
             </div>
           </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );

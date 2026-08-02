@@ -9,6 +9,7 @@
 // ==========================================
 
 import { useState } from "react";
+import Link from "next/link";
 
 // ==========================================
 // Shared aggregation logic
@@ -349,14 +350,29 @@ export default function DashboardManager({
           />
         </div>
 
-        {/* Recent transactions */}
+        {/* Recent transactions — capped at 6; the full history lives at
+            /transactions. Only items (the TransactionsManager prop) is
+            sliced — the underlying items state stays full-size, since
+            budgetOverview/monthSummary/savingsOverview/paidByBreakdown
+            above all need the complete array. */}
         <div className="rounded-2xl border border-border bg-surface-card p-5">
-          <h3 className="mb-4 text-base font-semibold text-primary">
-            Recent transactions
-          </h3>
+          <div className="mb-4 flex items-center justify-between">
+            <h3 className="text-base font-semibold text-primary">
+              Recent transactions
+            </h3>
+
+            {items.length > 6 && (
+              <Link
+                href="/transactions"
+                className="text-sm font-medium text-accent-deep hover:text-accent"
+              >
+                View all &rarr;
+              </Link>
+            )}
+          </div>
 
           <TransactionsManager
-            items={items}
+            items={items.slice(0, 6)}
             categories={categories}
             householdMembers={householdMembers}
             currentUserId={currentUserId}

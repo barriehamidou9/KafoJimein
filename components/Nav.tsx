@@ -22,7 +22,7 @@ const NAV_LINKS = [
   { href: "/budgets", label: "Budgets" },
   { href: "/categories", label: "Categories" },
   { href: "/recurring", label: "Recurring" },
-  { href: "/deleted", label: "Deleted" },
+  { href: "/transactions", label: "Transactions" },
 ];
 
 // A small gear icon for Settings — collapsed to icon-only in the nav

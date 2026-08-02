@@ -11,18 +11,18 @@ import { createClient } from "@/lib/supabase/server";
 // Server Actions
 // ==========================================
 
-import { getDeletedBudgetItems } from "@/app/actions/budgetItems";
+import { getBudgetItems, getDeletedBudgetItems } from "@/app/actions/budgetItems";
 import { getCategories } from "@/app/actions/categories";
-import { getCurrentUserRole } from "@/app/actions/households";
+import { getCurrentUserRole, getHouseholdMembers } from "@/app/actions/households";
 
 // ==========================================
 // Components
 // ==========================================
 
 import Nav from "@/components/Nav";
-import DeletedItemsList from "@/components/DeletedItemsList";
+import TransactionsTabs from "@/components/TransactionsTabs";
 
-export default async function DeletedPage() {
+export default async function TransactionsPage() {
   // ==========================================
   // Authentication
   // ==========================================
@@ -37,11 +37,17 @@ export default async function DeletedPage() {
     redirect("/login?message=Please%20sign%20in%20to%20continue.");
   }
 
-  const [items, categories, role] = await Promise.all([
-    getDeletedBudgetItems(),
-    getCategories(),
-    getCurrentUserRole(),
-  ]);
+  // getBudgetItems() is the full, unsliced, newest-first history — the
+  // dashboard's Recent-transactions card only ever sees a slice of the
+  // same data, this page shows all of it.
+  const [activeItems, deletedItems, categories, householdMembers, role] =
+    await Promise.all([
+      getBudgetItems(),
+      getDeletedBudgetItems(),
+      getCategories(),
+      getHouseholdMembers(),
+      getCurrentUserRole(),
+    ]);
 
   const isAdmin = role === "admin";
 
@@ -51,7 +57,6 @@ export default async function DeletedPage() {
 
   return (
     <main className="min-h-screen bg-surface-page">
-      {/* Navigation */}
       <Nav />
 
       <div className="mx-auto max-w-6xl px-6 py-10">
@@ -65,23 +70,22 @@ export default async function DeletedPage() {
           </Link>
 
           <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
-            Recently deleted
+            Transactions
           </h2>
 
           <p className="mt-2 text-secondary">
-            Transactions deleted in the last 30 days. Restore one to bring
-            it back.
+            Your full transaction history.
           </p>
         </section>
 
-        {/* Deleted transactions */}
-        <section className="rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
-          <DeletedItemsList
-            initialItems={items}
-            categories={categories}
-            isAdmin={isAdmin}
-          />
-        </section>
+        <TransactionsTabs
+          initialActiveItems={activeItems}
+          deletedItems={deletedItems}
+          categories={categories}
+          householdMembers={householdMembers}
+          currentUserId={user.id}
+          isAdmin={isAdmin}
+        />
       </div>
     </main>
   );
