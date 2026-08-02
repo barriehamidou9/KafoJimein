@@ -105,7 +105,7 @@ export default function CategoryTargetsRow({
 
   return (
     <div className="rounded-xl border border-border px-4 py-3">
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-center justify-between gap-2 sm:flex-nowrap">
         <p className="font-medium text-primary">{category.name}</p>
 
         <div className="flex items-center gap-3">

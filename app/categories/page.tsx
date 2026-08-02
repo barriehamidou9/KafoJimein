@@ -176,7 +176,7 @@ export default async function CategoriesPage() {
                         {items.map((category) => (
                           <div
                             key={category.id}
-                            className="flex items-center justify-between rounded-xl border border-border px-4 py-3"
+                            className="flex flex-wrap items-center justify-between gap-2 rounded-xl border border-border px-4 py-3 sm:flex-nowrap"
                           >
                             <p className="font-medium text-primary">
                               {category.name}

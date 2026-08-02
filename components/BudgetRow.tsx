@@ -155,11 +155,39 @@ export default function BudgetRow({
         event.preventDefault();
         handleSave();
       }}
-      className="flex items-center justify-between gap-4 rounded-xl border border-border px-4 py-3"
+      className="flex flex-col gap-3 rounded-xl border border-border px-4 py-3 sm:flex-row sm:items-center sm:gap-4"
     >
-      <p className="font-medium text-primary">{category.name}</p>
+      {/* Mobile: label + $ input share the first line. Desktop: this
+          wrapper dissolves (sm:contents) so label and the input rejoin
+          the form's own flex row exactly as before — mr-auto on the
+          label reproduces the old justify-between "label far left, rest
+          clustered right" look without relying on there being exactly
+          two flex children. */}
+      <div className="flex items-center gap-3 sm:contents">
+        <p className="font-medium text-primary sm:mr-auto">
+          {category.name}
+        </p>
 
-      <div className="flex items-center gap-3">
+        <div className="flex flex-1 items-center gap-2 sm:flex-none">
+          <span className="text-secondary">$</span>
+
+          <input
+            type="number"
+            name="amount"
+            min="0"
+            step="0.01"
+            placeholder="0.00"
+            value={amount}
+            onChange={(event) => setAmount(event.target.value)}
+            className="w-full rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20 sm:w-32"
+          />
+        </div>
+      </div>
+
+      {/* Mobile: Save + Remove share a second line, each big enough to
+          tap comfortably. Desktop: unchanged size/shape, back to sitting
+          inline with the input group above. */}
+      <div className="flex flex-wrap items-center gap-3 sm:flex-nowrap">
         {/* Transient "Saved" / "Removed" confirmation. */}
         {status === "saved" && (
           <span className="text-sm font-medium text-accent-deep">Saved</span>
@@ -173,25 +201,10 @@ export default function BudgetRow({
           <span className="text-sm font-medium text-danger">{error}</span>
         )}
 
-        <div className="flex items-center gap-2">
-          <span className="text-secondary">$</span>
-
-          <input
-            type="number"
-            name="amount"
-            min="0"
-            step="0.01"
-            placeholder="0.00"
-            value={amount}
-            onChange={(event) => setAmount(event.target.value)}
-            className="w-32 rounded-xl border border-border bg-surface-card px-3 py-2 text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
-          />
-        </div>
-
         <button
           type="submit"
           disabled={isSubmitting}
-          className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
+          className="min-h-11 flex-1 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50 sm:min-h-0 sm:flex-none"
         >
           Save
         </button>
@@ -202,7 +215,7 @@ export default function BudgetRow({
             type="button"
             onClick={handleRemove}
             disabled={isSubmitting}
-            className="rounded-xl border border-danger/30 px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10 focus:outline-none focus:ring-4 focus:ring-danger/20 disabled:opacity-50"
+            className="min-h-11 flex-1 rounded-xl border border-danger/30 px-4 py-2 text-sm font-semibold text-danger transition hover:bg-danger/10 focus:outline-none focus:ring-4 focus:ring-danger/20 disabled:opacity-50 sm:min-h-0 sm:flex-none"
           >
             Remove
           </button>
