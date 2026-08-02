@@ -100,7 +100,9 @@ export default function CategoryTargetsRow({
   // ==========================================
   // User Interface
   // Editable for admins. Delete stays its own standalone <form> — nested
-  // forms aren't valid HTML, so it sits beside the Save form, not inside it.
+  // forms aren't valid HTML — but now sits beside the Save form down in
+  // the actions row, matching BudgetRow's Save/Remove pairing, instead
+  // of up in the header.
   // ==========================================
 
   return (
@@ -118,71 +120,81 @@ export default function CategoryTargetsRow({
           {error && (
             <span className="text-sm font-medium text-danger">{error}</span>
           )}
-
-          <form action={deleteCategory}>
-            <input type="hidden" name="id" value={category.id} />
-
-            <button
-              type="submit"
-              className="min-h-11 rounded-lg border border-danger/40 px-3 py-1.5 text-sm font-medium text-danger transition hover:bg-danger/10 sm:min-h-0"
-            >
-              Delete
-            </button>
-          </form>
         </div>
       </div>
 
-      <form
-        onSubmit={(event) => {
-          event.preventDefault();
-          handleSave();
-        }}
-        className="mt-3 flex flex-wrap items-end gap-4"
-      >
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs text-secondary">Target</label>
-
-          <div className="flex items-center gap-2">
-            <span className="text-secondary">$</span>
-
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="No target"
-              value={targetAmount}
-              onChange={(event) => setTargetAmount(event.target.value)}
-              className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
-            />
-          </div>
-        </div>
-
-        <div className="flex flex-col gap-1.5">
-          <label className="text-xs text-secondary">Monthly target</label>
-
-          <div className="flex items-center gap-2">
-            <span className="text-secondary">$</span>
-
-            <input
-              type="number"
-              min="0"
-              step="0.01"
-              placeholder="No target"
-              value={monthlyTarget}
-              onChange={(event) => setMonthlyTarget(event.target.value)}
-              className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
-            />
-          </div>
-        </div>
-
-        <button
-          type="submit"
-          disabled={isSubmitting}
-          className="rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
+      {/* The Target/Monthly-target/Save form and the Delete form as two
+          siblings in a shared row, so Save and Delete sit side by side —
+          same min-h-11/flex-1/sm:flex-none/sm:min-h-0 tap-target pattern
+          as BudgetRow's Save + Remove. */}
+      <div className="mt-3 flex flex-wrap items-end gap-4 sm:flex-nowrap">
+        <form
+          onSubmit={(event) => {
+            event.preventDefault();
+            handleSave();
+          }}
+          className="flex flex-wrap items-end gap-4"
         >
-          Save
-        </button>
-      </form>
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-secondary">Target</label>
+
+            <div className="flex items-center gap-2">
+              <span className="text-secondary">$</span>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="No target"
+                value={targetAmount}
+                onChange={(event) => setTargetAmount(event.target.value)}
+                className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
+              />
+            </div>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="text-xs text-secondary">Monthly target</label>
+
+            <div className="flex items-center gap-2">
+              <span className="text-secondary">$</span>
+
+              <input
+                type="number"
+                min="0"
+                step="0.01"
+                placeholder="No target"
+                value={monthlyTarget}
+                onChange={(event) => setMonthlyTarget(event.target.value)}
+                className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
+              />
+            </div>
+          </div>
+
+          <button
+            type="submit"
+            disabled={isSubmitting}
+            className="min-h-11 flex-1 rounded-lg bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50 sm:min-h-0 sm:flex-none"
+          >
+            Save
+          </button>
+        </form>
+
+        {/* flex on the form itself (not just the button) so the button's
+            flex-1/sm:flex-none actually has a flex parent to size
+            against — it's the direct child of this form, not of the
+            outer row above. */}
+        <form action={deleteCategory} className="flex">
+          <input type="hidden" name="id" value={category.id} />
+
+          <button
+            type="submit"
+            className="min-h-11 flex-1 rounded-lg border border-danger/40 px-3 py-1.5 text-sm font-medium text-danger transition hover:bg-danger/10 sm:min-h-0 sm:flex-none"
+          >
+            Delete
+          </button>
+        </form>
+      </div>
     </div>
   );
 }
