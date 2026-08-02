@@ -124,7 +124,7 @@ export default function CategoryTargetsRow({
 
             <button
               type="submit"
-              className="text-sm font-medium text-danger hover:text-danger"
+              className="min-h-11 rounded-lg border border-danger/40 px-3 py-1.5 text-sm font-medium text-danger transition hover:bg-danger/10 sm:min-h-0"
             >
               Delete
             </button>
