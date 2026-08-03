@@ -123,51 +123,63 @@ export default function CategoryTargetsRow({
         </div>
       </div>
 
-      {/* The Target/Monthly-target/Save form and the Delete form as two
-          siblings in a shared row, so Save and Delete sit side by side —
-          same min-h-11/flex-1/sm:flex-none/sm:min-h-0 tap-target pattern
-          as BudgetRow's Save + Remove. */}
-      <div className="mt-3 flex flex-wrap items-end gap-4 sm:flex-nowrap">
+      {/* Mobile: Target/Monthly-target stack full-width (forcing Save +
+          Delete onto their own row below, side by side, since they're
+          the only items left to wrap onto the next flex-wrap line).
+          Desktop: both the inputs-wrapper and the two forms dissolve
+          (display: contents) so Target, Monthly target, Save, and
+          Delete all rejoin this single outer row exactly as the
+          original one-line layout did — contents is safe here because
+          handleSave() builds its FormData from React state, not by
+          scraping the form's DOM, so nothing depends on the inputs
+          staying visually inside the form's own box; Enter-to-submit
+          and the Save/Delete buttons' form association are unaffected
+          since contents only changes box generation, not the DOM tree. */}
+      <div className="mt-3 flex flex-wrap items-end gap-4">
         <form
           onSubmit={(event) => {
             event.preventDefault();
             handleSave();
           }}
-          className="flex flex-wrap items-end gap-4"
+          className="contents"
         >
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-secondary">Target</label>
+          <div className="flex w-full flex-col gap-3 sm:contents">
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-secondary">Target</label>
 
-            <div className="flex items-center gap-2">
-              <span className="text-secondary">$</span>
+              <div className="flex items-center gap-2">
+                <span className="text-secondary">$</span>
 
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="No target"
-                value={targetAmount}
-                onChange={(event) => setTargetAmount(event.target.value)}
-                className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
-              />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="No target"
+                  value={targetAmount}
+                  onChange={(event) => setTargetAmount(event.target.value)}
+                  className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
+                />
+              </div>
             </div>
-          </div>
 
-          <div className="flex flex-col gap-1.5">
-            <label className="text-xs text-secondary">Monthly target</label>
+            <div className="flex flex-col gap-1.5">
+              <label className="text-xs text-secondary">
+                Monthly target
+              </label>
 
-            <div className="flex items-center gap-2">
-              <span className="text-secondary">$</span>
+              <div className="flex items-center gap-2">
+                <span className="text-secondary">$</span>
 
-              <input
-                type="number"
-                min="0"
-                step="0.01"
-                placeholder="No target"
-                value={monthlyTarget}
-                onChange={(event) => setMonthlyTarget(event.target.value)}
-                className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
-              />
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  placeholder="No target"
+                  value={monthlyTarget}
+                  onChange={(event) => setMonthlyTarget(event.target.value)}
+                  className="w-28 rounded-lg border border-border bg-surface-card px-3 py-2 text-sm text-primary outline-none transition placeholder:text-muted focus:border-accent focus:ring-4 focus:ring-accent/20"
+                />
+              </div>
             </div>
           </div>
 
@@ -180,11 +192,7 @@ export default function CategoryTargetsRow({
           </button>
         </form>
 
-        {/* flex on the form itself (not just the button) so the button's
-            flex-1/sm:flex-none actually has a flex parent to size
-            against — it's the direct child of this form, not of the
-            outer row above. */}
-        <form action={deleteCategory} className="flex">
+        <form action={deleteCategory} className="contents">
           <input type="hidden" name="id" value={category.id} />
 
           <button
