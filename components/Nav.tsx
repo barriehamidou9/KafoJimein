@@ -8,6 +8,7 @@
 // duplicated per-page logic.
 // ==========================================
 
+import { useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
@@ -47,18 +48,93 @@ function GearIcon() {
   );
 }
 
+// Hamburger / close icons for the mobile menu toggle — same hand-drawn
+// stroke style as GearIcon (currentColor, no fill, round caps), just a
+// touch larger since this is the primary mobile nav trigger.
+function MenuIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="3" y1="6" x2="21" y2="6" />
+      <line x1="3" y1="12" x2="21" y2="12" />
+      <line x1="3" y1="18" x2="21" y2="18" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="18" y1="6" x2="6" y2="18" />
+      <line x1="6" y1="6" x2="18" y2="18" />
+    </svg>
+  );
+}
+
 export default function Nav() {
   const pathname = usePathname();
 
+  // Mobile menu open/closed. Irrelevant at sm:+ — the <nav> below is
+  // forced visible there regardless of this state (see its className).
+  const [menuOpen, setMenuOpen] = useState(false);
+
+  function closeMenu() {
+    setMenuOpen(false);
+  }
+
   return (
-    <header className="border-b border-border bg-transparent">
+    <header className="relative border-b border-border bg-transparent">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
-        <Link href="/" className="block">
+        <Link href="/" className="block" onClick={closeMenu}>
           <p className="text-[17px] font-medium text-primary">KafoJimein</p>
           <p className="text-[12px] text-muted">Family finance</p>
         </Link>
 
-        <nav className="flex items-center gap-5">
+        {/* Hamburger — mobile only, toggles the <nav> below. */}
+        <button
+          type="button"
+          onClick={() => setMenuOpen((open) => !open)}
+          aria-label={menuOpen ? "Close menu" : "Open menu"}
+          aria-expanded={menuOpen}
+          className="flex min-h-11 min-w-11 items-center justify-center text-secondary transition hover:text-primary sm:hidden"
+        >
+          {menuOpen ? <CloseIcon /> : <MenuIcon />}
+        </button>
+
+        {/* Single <nav> for both roles — there is only ever one
+            <ThemeToggle /> and one <LogoutButton /> in the tree, never
+            two mounted at once. Below sm: it's a `menuOpen`-driven
+            absolute dropdown panel (flex-col, full width, stacked
+            min-h-11 rows); at sm:+ the sm: classes override every one
+            of those — including forcing display:flex regardless of
+            menuOpen, since Tailwind emits responsive variants after
+            base utilities, so `sm:flex` wins the cascade over a plain
+            `hidden` at that breakpoint — reproducing the exact original
+            horizontal row untouched. */}
+        <nav
+          className={`${
+            menuOpen ? "flex" : "hidden"
+          } absolute inset-x-0 top-full z-20 flex-col border-b border-border bg-surface-card sm:static sm:z-auto sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-5 sm:border-none sm:bg-transparent`}
+        >
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
 
@@ -66,11 +142,12 @@ export default function Nav() {
               <Link
                 key={link.href}
                 href={link.href}
-                className={
+                onClick={closeMenu}
+                className={`flex min-h-11 items-center px-6 text-[14px] transition sm:min-h-0 sm:px-0 ${
                   isActive
-                    ? "text-[14px] text-primary"
-                    : "text-[14px] text-secondary transition hover:text-primary"
-                }
+                    ? "text-primary"
+                    : "text-secondary hover:text-primary"
+                }`}
               >
                 {link.label}
               </Link>
@@ -79,22 +156,51 @@ export default function Nav() {
 
           <Link
             href="/settings"
+            onClick={closeMenu}
             aria-label="Settings"
             title="Settings"
-            className={
+            className={`flex min-h-11 items-center gap-2 px-6 text-[14px] transition sm:min-h-0 sm:px-0 ${
               pathname === "/settings"
                 ? "text-primary"
-                : "text-secondary transition hover:text-primary"
-            }
+                : "text-secondary hover:text-primary"
+            }`}
           >
             <GearIcon />
+            {/* Icon-only on desktop, matching the original exactly —
+                labeled on mobile so it doesn't read as a stray icon
+                among the other text rows. */}
+            <span className="sm:hidden">Settings</span>
           </Link>
 
-          <ThemeToggle />
+          {/* onClick here closes the mobile menu on any click inside —
+              ThemeToggle's own button click still fires and bubbles up
+              to this div (it doesn't call stopPropagation), so the
+              theme toggles AND the menu closes. Inert on desktop since
+              the menu is never open there. */}
+          <div
+            onClick={closeMenu}
+            className="flex min-h-11 items-center px-6 sm:min-h-0 sm:px-0"
+          >
+            <ThemeToggle />
+          </div>
 
-          <LogoutButton />
+          <div className="flex min-h-11 items-center px-6 sm:min-h-0 sm:px-0">
+            <LogoutButton />
+          </div>
         </nav>
       </div>
+
+      {/* Backdrop: tapping outside the open mobile panel closes it.
+          sm:hidden guards against a stale menuOpen=true lingering if the
+          viewport is resized past the breakpoint without a reload. */}
+      {menuOpen && (
+        <button
+          type="button"
+          aria-label="Close menu"
+          onClick={closeMenu}
+          className="fixed inset-0 z-10 bg-black/20 sm:hidden"
+        />
+      )}
     </header>
   );
 }
