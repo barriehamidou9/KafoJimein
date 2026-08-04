@@ -291,10 +291,12 @@ export default function DashboardManager({
     <>
       {/* Hero: how much is actually left this month — income-based, not
           budget-based. Per-category budgets still drive Tracked spending
-          further down; they aren't this card's denominator. Kept at its
-          own p-6/prominent size — everything below is intentionally
-          tighter so the hero stays the visual anchor. */}
-      <div className="rounded-xl border-[0.5px] border-border bg-surface-card p-6">
+          further down; they aren't this card's denominator. Same
+          rounded-2xl/border/bg-surface-card as every other dashboard
+          card now; kept p-6 (not p-5) since the 80px hero number is
+          meaningfully bigger than any other card's content and reads
+          cramped with the tighter padding. */}
+      <div className="rounded-2xl border border-border bg-surface-card p-6">
         <div className="flex items-center justify-between">
           <p className="text-[13px] text-secondary">Left this month</p>
 
