@@ -30,6 +30,115 @@ import AddBudgetItemForm from "@/components/AddBudgetItemForm";
 import TransactionsManager from "@/components/TransactionsManager";
 import DueRecurringExpenseCard from "@/components/DueRecurringExpenseCard";
 import SavingCard from "@/components/SavingCard";
+import SectionHeader from "@/components/SectionHeader";
+
+// ==========================================
+// Section header icons
+// Hand-drawn, same style as Nav.tsx's GearIcon (24x24 viewBox, stroke
+// currentColor, round caps/joins) — no icon library. Sized for the
+// ~18px slot inside SectionHeader's accent tile; currentColor picks up
+// the tile's own text-white.
+// ==========================================
+
+function BasketIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M5 9h14l-1.4 9.2a2 2 0 0 1-2 1.8H8.4a2 2 0 0 1-2-1.8L5 9z" />
+      <path d="M8.5 9V7.5a3.5 3.5 0 0 1 7 0V9" />
+      <line x1="5" y1="12.5" x2="19" y2="12.5" />
+    </svg>
+  );
+}
+
+function TargetIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <circle cx="12" cy="12" r="8" />
+      <circle cx="12" cy="12" r="4.5" />
+      <circle cx="12" cy="12" r="1" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
+
+function PlusIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="12" y1="5" x2="12" y2="19" />
+      <line x1="5" y1="12" x2="19" y2="12" />
+    </svg>
+  );
+}
+
+function ReceiptIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M6 3h12v17l-2-1.3-2 1.3-2-1.3-2 1.3-2-1.3-2 1.3V3z" />
+      <line x1="9" y1="8" x2="15" y2="8" />
+      <line x1="9" y1="12" x2="15" y2="12" />
+    </svg>
+  );
+}
+
+function CalendarIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <rect x="4" y="5" width="16" height="15" rx="2" />
+      <line x1="4" y1="10" x2="20" y2="10" />
+      <line x1="8" y1="3" x2="8" y2="7" />
+      <line x1="16" y1="3" x2="16" y2="7" />
+    </svg>
+  );
+}
 
 // ==========================================
 // Types
@@ -234,9 +343,7 @@ export default function DashboardManager({
             budget vs. actual spending this month. */}
         {variableItems.length > 0 && (
           <section className="rounded-2xl border border-border bg-surface-card p-5">
-            <h3 className="mb-4 text-base font-semibold text-primary">
-              Tracked spending
-            </h3>
+            <SectionHeader icon={<BasketIcon />} title="Tracked spending" />
 
             <div className="space-y-4">
               {variableItems.map((item) => {
@@ -298,9 +405,7 @@ export default function DashboardManager({
             for expenses and income. */}
         {savingsOverview.length > 0 && (
           <section className="rounded-2xl border border-border bg-surface-card p-5">
-            <h3 className="mb-4 text-base font-semibold text-primary">
-              Saving
-            </h3>
+            <SectionHeader icon={<TargetIcon />} title="Saving" />
 
             <div className="grid gap-4 sm:grid-cols-2">
               {savingsOverview.map((saving) => (
@@ -315,15 +420,11 @@ export default function DashboardManager({
           haven't been confirmed/skipped yet this period. */}
       {dueExpenses.length > 0 && (
         <section className="mt-6 rounded-2xl border border-border bg-surface-card p-5">
-          <div className="mb-4">
-            <h3 className="text-base font-semibold text-primary">
-              Due this month
-            </h3>
-
-            <p className="mt-1 text-sm text-secondary">
-              Confirm or skip each recurring expense that&apos;s come due.
-            </p>
-          </div>
+          <SectionHeader
+            icon={<CalendarIcon />}
+            title="Due this month"
+            subtitle="Confirm or skip each recurring expense that's come due."
+          />
 
           <div className="space-y-3">
             {dueExpenses.map((expense) => (
@@ -348,9 +449,7 @@ export default function DashboardManager({
       <section className="mt-6 grid grid-cols-1 gap-6 md:grid-cols-[380px_1fr]">
         {/* Add transaction */}
         <div className="rounded-2xl border border-border bg-surface-card p-5">
-          <h3 className="mb-4 text-base font-semibold text-primary">
-            Add transaction
-          </h3>
+          <SectionHeader icon={<PlusIcon />} title="Add transaction" />
 
           <AddBudgetItemForm
             addBudgetItem={addBudgetItem}
@@ -367,10 +466,11 @@ export default function DashboardManager({
             budgetOverview/monthSummary/savingsOverview/paidByBreakdown
             above all need the complete array. */}
         <div className="rounded-2xl border border-border bg-surface-card p-5">
-          <div className="mb-4 flex items-center justify-between">
-            <h3 className="text-base font-semibold text-primary">
-              Recent transactions
-            </h3>
+          <div className="flex items-center justify-between">
+            <SectionHeader
+              icon={<ReceiptIcon />}
+              title="Recent transactions"
+            />
 
             {items.length > 6 && (
               <Link
