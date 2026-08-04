@@ -144,24 +144,31 @@ export default function DueRecurringExpenseCard({
         {/* No async, no server call — this is a plain local dismissal,
             not tied to isSubmitting's request lifecycle. Still disabled
             while a Confirm/Skip request is in flight so this card can't
-            unmount out from under that request's eventual callback. */}
+            unmount out from under that request's eventual callback.
+            border-primary/30 (not border-border) so it reads clearly as
+            a button against the card's own bg-warn/10 tint — no
+            "border-strong" token exists in this design system, so this
+            is the closest available bolder-but-neutral option. */}
         <button
           type="button"
           onClick={onNotYet}
           disabled={isSubmitting}
-          className="min-h-11 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-surface-track disabled:opacity-50"
+          className="min-h-11 rounded-xl border border-primary/30 px-4 py-2 text-sm font-semibold text-primary transition hover:bg-surface-track disabled:opacity-50"
         >
           Not yet
         </button>
 
         {/* Deliberately the quietest of the three — a lasting choice
             (persists via skipRecurringExpense, won't return until next
-            month), so it shouldn't be as easy to tap as "Not yet". */}
+            month), so it shouldn't be as easy to tap as "Not yet". Now a
+            real button shape (hairline border, same rounded/padding as
+            its siblings) instead of bare text, so it's unmistakably
+            tappable even though it stays the quietest visually. */}
         <button
           type="button"
           onClick={handleSkip}
           disabled={isSubmitting}
-          className="flex min-h-11 items-center px-2 text-sm font-medium text-muted transition hover:text-secondary disabled:opacity-50"
+          className="min-h-11 rounded-xl border border-border px-4 py-2 text-sm font-medium text-secondary transition hover:bg-surface-track disabled:opacity-50"
         >
           Skip this month
         </button>
