@@ -158,6 +158,16 @@ export default function DashboardManager({
     handleAdded(transaction);
   }
 
+  // Purely local dismissal, no server action involved — the item will
+  // reappear next page load since nothing about last_confirmed_year/
+  // month was ever touched. Distinct from handleExpenseSkipped below,
+  // which does persist via skipRecurringExpense.
+  function handleExpenseNotYet(expenseId: string) {
+    setDueExpenses((previous) =>
+      previous.filter((expense) => expense.id !== expenseId)
+    );
+  }
+
   function handleExpenseSkipped(expenseId: string) {
     setDueExpenses((previous) =>
       previous.filter((expense) => expense.id !== expenseId)
@@ -325,6 +335,7 @@ export default function DashboardManager({
                 onConfirmed={(transaction) =>
                   handleExpenseConfirmed(expense.id, transaction)
                 }
+                onNotYet={() => handleExpenseNotYet(expense.id)}
                 onSkipped={() => handleExpenseSkipped(expense.id)}
               />
             ))}

@@ -30,6 +30,10 @@ type DueRecurringExpenseCardProps = {
   categories: Category[];
   householdMembers: HouseholdMember[];
   onConfirmed: (transaction: BudgetItem) => void;
+  // Purely local dismissal — no server call, so the item reappears on
+  // the next page load (nothing about last_confirmed is stamped). Kept
+  // distinct from onSkipped, which does persist.
+  onNotYet: () => void;
   onSkipped: () => void;
 };
 
@@ -38,6 +42,7 @@ export default function DueRecurringExpenseCard({
   categories,
   householdMembers,
   onConfirmed,
+  onNotYet,
   onSkipped,
 }: DueRecurringExpenseCardProps) {
   // ==========================================
@@ -126,23 +131,39 @@ export default function DueRecurringExpenseCard({
         <p className="mt-2 text-sm font-medium text-danger">{error}</p>
       )}
 
-      <div className="mt-3 flex gap-2">
+      <div className="mt-3 flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={handleConfirm}
           disabled={isSubmitting}
-          className="rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
+          className="min-h-11 rounded-xl bg-accent px-4 py-2 text-sm font-semibold text-on-accent transition hover:bg-accent-deep focus:outline-none focus:ring-4 focus:ring-accent/20 disabled:opacity-50"
         >
           Confirm
         </button>
 
+        {/* No async, no server call — this is a plain local dismissal,
+            not tied to isSubmitting's request lifecycle. Still disabled
+            while a Confirm/Skip request is in flight so this card can't
+            unmount out from under that request's eventual callback. */}
+        <button
+          type="button"
+          onClick={onNotYet}
+          disabled={isSubmitting}
+          className="min-h-11 rounded-xl border border-border px-4 py-2 text-sm font-semibold text-primary transition hover:bg-surface-track disabled:opacity-50"
+        >
+          Not yet
+        </button>
+
+        {/* Deliberately the quietest of the three — a lasting choice
+            (persists via skipRecurringExpense, won't return until next
+            month), so it shouldn't be as easy to tap as "Not yet". */}
         <button
           type="button"
           onClick={handleSkip}
           disabled={isSubmitting}
-          className="rounded-xl border border-border px-4 py-2 text-sm font-semibold text-secondary transition hover:bg-surface-track disabled:opacity-50"
+          className="flex min-h-11 items-center px-2 text-sm font-medium text-muted transition hover:text-secondary disabled:opacity-50"
         >
-          Skip
+          Skip this month
         </button>
       </div>
     </div>
