@@ -28,9 +28,9 @@ import { addBudgetItem, getBudgetItems } from "@/app/actions/budgetItems";
 // For the hero card's income figure.
 import { getHouseholdIncome } from "@/app/actions/householdIncome";
 
-// For the "Paid by" dropdown, and the household's own name for the
-// preamble line.
-import { getHouseholdMembers, getHouseholdName } from "@/app/actions/households";
+// For the "Paid by" dropdown, and to look up the current user's own
+// display name for the preamble greeting.
+import { getHouseholdMembers } from "@/app/actions/households";
 
 // For the "Due this month" section.
 import { getDueRecurringExpenses } from "@/app/actions/recurringExpenses";
@@ -86,7 +86,6 @@ export default async function Home() {
     householdMembers,
     dueExpenses,
     householdIncome,
-    householdName,
   ] = await Promise.all([
     getBudgetItems(),
     getCategories(),
@@ -94,10 +93,20 @@ export default async function Home() {
     getHouseholdMembers(),
     getDueRecurringExpenses(),
     getHouseholdIncome(),
-    getHouseholdName(),
   ]);
 
   const monthLabel = getHouseholdMonthLabel(HOUSEHOLD_TIME_ZONE);
+
+  // Same householdMembers-lookup pattern used elsewhere (TransactionRow,
+  // DueRecurringExpenseCard, ...) matched against the current user
+  // instead of a paid_by id. displayName can never be an empty string
+  // (household_members_display's own coalesce() falls back to email —
+  // see migration 0010), so the only real edge case is currentMember
+  // itself being undefined.
+  const currentMember = householdMembers.find(
+    (member) => member.userId === user.id
+  );
+  const greetingName = currentMember?.displayName ?? "";
 
   // ==========================================
   // User Interface
@@ -114,7 +123,7 @@ export default async function Home() {
       <div className="mx-auto max-w-6xl px-6 py-10">
         {/* Preamble: a single small line replaces the old heading block. */}
         <p className="mb-6 text-xs text-muted">
-          {monthLabel} · {householdName} household
+          {monthLabel} · Djaraama{greetingName ? `, ${greetingName}` : ""}
         </p>
 
         <DashboardManager
