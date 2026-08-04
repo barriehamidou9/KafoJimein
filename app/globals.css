@@ -82,3 +82,16 @@ body {
   color: var(--text-primary);
   font-family: Arial, Helvetica, sans-serif;
 }
+
+/* Header-only override: forces text-primary/secondary/muted light for
+   the solid green header band, same in both light and dark mode. Since
+   ThemeToggle.tsx/LogoutButton.tsx read these same custom properties
+   (not hardcoded Tailwind colors), scoping this to .header-onGreen
+   recolors them too without editing either file — CSS custom properties
+   set on a descendant always win over :root/.dark's values on <html>
+   for elements inside it, regardless of which theme is active. */
+.header-onGreen {
+  --text-primary: #ffffff;
+  --text-secondary: #cbe8de;
+  --text-muted: #9fd6c4;
+}

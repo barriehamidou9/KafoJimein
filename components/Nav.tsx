@@ -102,30 +102,32 @@ export default function Nav() {
   }
 
   return (
-    <header className="relative border-b border-border bg-transparent">
+    <header className="header-onGreen relative border-b border-[#0a3d2e] bg-[#0d4d3a]">
       <div className="mx-auto flex max-w-6xl items-center justify-between px-6 py-4">
         <Link
           href="/"
           className="flex items-center gap-2.5"
           onClick={closeMenu}
         >
-          {/* Logo mark: house (white, fixed — not a theme color, since it
-              must stay high-contrast against the green square in both
-              themes) with a small heart "cut out" in fill-accent so it
-              reads as a hole revealing the square behind it. */}
-          <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-accent">
+          {/* Logo mark, flipped for the green band: white square, green
+              house, white heart cut into it — the inverse of how this
+              looked on the page background. */}
+          <div className="flex h-[34px] w-[34px] shrink-0 items-center justify-center rounded-[10px] bg-white">
             <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
-              <polygon points="12,4 20,11 4,11" fill="white" />
-              <rect x="6" y="11" width="12" height="9" fill="white" />
+              <polygon points="12,4 20,11 4,11" fill="#0d4d3a" />
+              <rect x="6" y="11" width="12" height="9" fill="#0d4d3a" />
               <path
                 d="M12,18.2 C12,18.2 9,16.3 9,14.6 C9,13.5 9.8,12.7 10.9,12.7 C11.5,12.7 12,13.1 12,13.6 C12,13.1 12.5,12.7 13.1,12.7 C14.2,12.7 15,13.5 15,14.6 C15,16.3 12,18.2 12,18.2 Z"
-                className="fill-accent"
+                fill="white"
               />
             </svg>
           </div>
 
           <div>
-            <p className="text-[17px] font-medium text-accent">
+            {/* text-primary, not a literal text-white — resolves to
+                white via the .header-onGreen scope above, same
+                mechanism as every other light-on-green color here. */}
+            <p className="text-[17px] font-medium text-primary">
               KafoJimein
             </p>
             <p className="text-[12px] text-muted">Family finance</p>
@@ -156,7 +158,7 @@ export default function Nav() {
         <nav
           className={`${
             menuOpen ? "flex" : "hidden"
-          } absolute inset-x-0 top-full z-20 flex-col border-b border-border bg-surface-card sm:static sm:z-auto sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-5 sm:border-none sm:bg-transparent`}
+          } absolute inset-x-0 top-full z-20 flex-col border-b border-[#0a3d2e] bg-[#0d4d3a] sm:static sm:z-auto sm:flex sm:w-auto sm:flex-row sm:items-center sm:gap-5 sm:border-none sm:bg-transparent`}
         >
           {NAV_LINKS.map((link) => {
             const isActive = pathname === link.href;
