@@ -21,9 +21,32 @@ import { getHouseholdIncome } from "@/app/actions/householdIncome";
 // ==========================================
 
 import Nav from "@/components/Nav";
+import SectionHeader from "@/components/SectionHeader";
 
 // Owns the reactive total + list of BudgetRow items.
 import BudgetsManager from "@/components/BudgetsManager";
+
+// Page-header icon — hand-drawn, same house style as the dashboard's
+// icons (DashboardManager.tsx) and Nav's GearIcon: 24x24 viewBox,
+// currentColor stroke so it inherits the tile's text-on-accent color.
+function WalletIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M3 7a2 2 0 0 1 2-2h13a1 1 0 0 1 1 1v3" />
+      <path d="M3 7v11a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-6a1 1 0 0 0-1-1h-5a2 2 0 0 0 0 4h.01" />
+    </svg>
+  );
+}
 
 export default async function BudgetsPage() {
   // ==========================================
@@ -78,13 +101,14 @@ export default async function BudgetsPage() {
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
-            Budgets
-          </h2>
-
-          <p className="mt-2 text-secondary">
-            Set a spending limit for each expense category.
-          </p>
+          <div className="mt-3">
+            <SectionHeader
+              size="lg"
+              icon={<WalletIcon />}
+              title="Budgets"
+              subtitle="Set a spending limit for each expense category."
+            />
+          </div>
         </section>
 
         {/* Budgets per expense category */}

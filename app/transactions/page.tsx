@@ -20,7 +20,34 @@ import { getCurrentUserRole, getHouseholdMembers } from "@/app/actions/household
 // ==========================================
 
 import Nav from "@/components/Nav";
+import SectionHeader from "@/components/SectionHeader";
 import TransactionsTabs from "@/components/TransactionsTabs";
+
+// Page-header icon — hand-drawn, same house style as the dashboard's
+// icons (DashboardManager.tsx) and Nav's GearIcon: 24x24 viewBox,
+// currentColor stroke so it inherits the tile's text-on-accent color.
+function ListIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <line x1="8" y1="6" x2="21" y2="6" />
+      <line x1="8" y1="12" x2="21" y2="12" />
+      <line x1="8" y1="18" x2="21" y2="18" />
+      <line x1="3" y1="6" x2="3.01" y2="6" />
+      <line x1="3" y1="12" x2="3.01" y2="12" />
+      <line x1="3" y1="18" x2="3.01" y2="18" />
+    </svg>
+  );
+}
 
 export default async function TransactionsPage() {
   // ==========================================
@@ -69,13 +96,14 @@ export default async function TransactionsPage() {
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
-            Transactions
-          </h2>
-
-          <p className="mt-2 text-secondary">
-            Your full transaction history.
-          </p>
+          <div className="mt-3">
+            <SectionHeader
+              size="lg"
+              icon={<ListIcon />}
+              title="Transactions"
+              subtitle="Your full transaction history."
+            />
+          </div>
         </section>
 
         <TransactionsTabs

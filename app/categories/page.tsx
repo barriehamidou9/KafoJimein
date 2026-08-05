@@ -19,8 +19,31 @@ import { getCurrentUserRole } from "@/app/actions/households";
 // ==========================================
 
 import Nav from "@/components/Nav";
+import SectionHeader from "@/components/SectionHeader";
 
 const CATEGORY_TYPES = ["income", "expense", "saving"] as const;
+
+// Page-header icon — hand-drawn, same house style as the dashboard's
+// icons (DashboardManager.tsx) and Nav's GearIcon: 24x24 viewBox,
+// currentColor stroke so it inherits the tile's text-on-accent color.
+function TagIcon() {
+  return (
+    <svg
+      width="22"
+      height="22"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12.6 3H5a2 2 0 0 0-2 2v7.6a2 2 0 0 0 .6 1.4l9.4 9.4a2 2 0 0 0 2.8 0l7.2-7.2a2 2 0 0 0 0-2.8L14 3.6a2 2 0 0 0-1.4-.6Z" />
+      <circle cx="8.5" cy="8.5" r="1.5" fill="currentColor" stroke="none" />
+    </svg>
+  );
+}
 
 export default async function CategoriesPage() {
   // ==========================================
@@ -63,13 +86,14 @@ export default async function CategoriesPage() {
             &larr; Back to dashboard
           </Link>
 
-          <h2 className="mt-1 text-3xl font-bold tracking-tight text-primary">
-            Categories
-          </h2>
-
-          <p className="mt-2 text-secondary">
-            Organize your income, expenses, and savings.
-          </p>
+          <div className="mt-3">
+            <SectionHeader
+              size="lg"
+              icon={<TagIcon />}
+              title="Categories"
+              subtitle="Organize your income, expenses, and savings."
+            />
+          </div>
         </section>
 
         <section
