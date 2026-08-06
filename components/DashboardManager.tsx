@@ -268,7 +268,9 @@ export default function DashboardManager({
       saving.monthlyTarget !== null &&
       saving.savedThisMonth < saving.monthlyTarget
   );
-  const showSavingsReminder = today.day >= 25 && behindGoals.length > 0;
+  // TEMP: lowered from 25 to 1 to preview the card mid-month. Restore to
+  // 25 once checked.
+  const showSavingsReminder = today.day >= 1 && behindGoals.length > 0;
 
   // Read-only transparency line under the hero — see lib/paidByBreakdown.ts.
   const paidByBreakdown = computePaidByBreakdown(items, householdMembers);
