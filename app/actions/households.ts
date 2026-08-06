@@ -8,6 +8,12 @@ import { createClient } from "@/lib/supabase/server";
 import { getHouseholdId } from "@/lib/supabase/households";
 
 // ==========================================
+// Next.js utilities
+// ==========================================
+
+import { revalidatePath } from "next/cache";
+
+// ==========================================
 // Types
 // ==========================================
 
@@ -119,4 +125,80 @@ export async function getHouseholdMembers(): Promise<HouseholdMember[]> {
     userId: row.user_id,
     displayName: row.display_name,
   }));
+}
+
+// ==========================================
+// The caller's household's current savings_reminder_day (see migration
+// 0021), for prefilling the settings page control. Same scoping as
+// getHouseholdName.
+// ==========================================
+
+export async function getSavingsReminderDay(): Promise<number> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const householdId = await getHouseholdId(supabase, user.id);
+
+  const { data, error } = await supabase
+    .from("households")
+    .select("savings_reminder_day")
+    .eq("id", householdId)
+    .single();
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  return data.savings_reminder_day;
+}
+
+// ==========================================
+// Server Action
+// Set the caller's household's savings_reminder_day (see migration 0021).
+// Validated here rather than left to the DB check constraint, so a bad
+// value fails with a clear message instead of a raw Postgres error. Any
+// member can change it — "Household members can update their household"
+// (0003) already allows this, no admin check needed.
+// ==========================================
+
+export async function updateSavingsReminderDay(
+  formData: FormData
+): Promise<void> {
+  const supabase = await createClient();
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
+
+  if (!user) {
+    throw new Error("User is not authenticated.");
+  }
+
+  const rawDay = formData.get("savings_reminder_day") as string;
+  const day = Number(rawDay);
+
+  if (!Number.isInteger(day) || day < 1 || day > 28) {
+    throw new Error("Savings reminder day must be a whole number between 1 and 28.");
+  }
+
+  const householdId = await getHouseholdId(supabase, user.id);
+
+  const { error } = await supabase
+    .from("households")
+    .update({ savings_reminder_day: day })
+    .eq("id", householdId);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  revalidatePath("/");
+  revalidatePath("/settings");
 }

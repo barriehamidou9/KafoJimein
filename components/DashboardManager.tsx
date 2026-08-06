@@ -197,6 +197,10 @@ type DashboardManagerProps = {
   // reactive state — nothing on the dashboard edits it, only the
   // Budgets page's Income section does, same as budgets/categories.
   householdIncome: HouseholdIncome[];
+  // The household's configured savings_reminder_day (migration 0021).
+  // Optional/nullable so the reminder degrades to its old fixed
+  // threshold rather than breaking if this somehow doesn't load.
+  savingsReminderDay?: number | null;
   addBudgetItem: (formData: FormData) => Promise<BudgetItem>;
 };
 
@@ -208,6 +212,7 @@ export default function DashboardManager({
   currentUserId,
   initialDueExpenses,
   householdIncome,
+  savingsReminderDay,
   addBudgetItem,
 }: DashboardManagerProps) {
   // ==========================================
@@ -250,10 +255,11 @@ export default function DashboardManager({
 
   // Savings reminder: a passive nudge, not a confirm/skip flow like
   // recurring expenses — pure derived display over savingsOverview, no
-  // new table/state. Only surfaces from the 25th onward (so it doesn't
-  // nag early in the month), only for goals with a monthly_target that
-  // haven't hit it yet this month, and disappears the instant
-  // savedThisMonth catches up — no dismiss action needed.
+  // new table/state. Only surfaces from savingsReminderDay onward (so it
+  // doesn't nag early in the month), only for goals with a
+  // monthly_target that haven't hit it yet this month, and disappears
+  // the instant savedThisMonth catches up — no dismiss action needed.
+  const reminderDay = savingsReminderDay ?? 25;
   const today = getHouseholdToday(HOUSEHOLD_TIME_ZONE);
   const { end: monthEnd } = getMonthRange(
     today.year,
@@ -268,7 +274,7 @@ export default function DashboardManager({
       saving.monthlyTarget !== null &&
       saving.savedThisMonth < saving.monthlyTarget
   );
-  const showSavingsReminder = today.day >= 25 && behindGoals.length > 0;
+  const showSavingsReminder = today.day >= reminderDay && behindGoals.length > 0;
 
   // Read-only transparency line under the hero — see lib/paidByBreakdown.ts.
   const paidByBreakdown = computePaidByBreakdown(items, householdMembers);

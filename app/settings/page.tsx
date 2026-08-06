@@ -12,6 +12,7 @@ import { createClient } from "@/lib/supabase/server";
 // ==========================================
 
 import { getMyProfile } from "@/app/actions/profiles";
+import { getSavingsReminderDay } from "@/app/actions/households";
 
 // ==========================================
 // Components
@@ -19,6 +20,7 @@ import { getMyProfile } from "@/app/actions/profiles";
 
 import Nav from "@/components/Nav";
 import DisplayNameEditor from "@/components/DisplayNameEditor";
+import SavingsReminderEditor from "@/components/SavingsReminderEditor";
 
 export default async function SettingsPage() {
   // ==========================================
@@ -36,6 +38,7 @@ export default async function SettingsPage() {
   }
 
   const profile = await getMyProfile();
+  const savingsReminderDay = await getSavingsReminderDay();
 
   // ==========================================
   // User Interface
@@ -79,6 +82,24 @@ export default async function SettingsPage() {
           </div>
 
           <DisplayNameEditor initialDisplayName={profile.displayName} />
+        </section>
+
+        {/* Savings reminder. Its own card, same shape as Display name
+            above, so email preferences can join as another block inside
+            this section later without restructuring the page. */}
+        <section className="mt-6 max-w-md rounded-2xl border border-border bg-surface-card p-6 shadow-sm">
+          <div className="mb-6">
+            <h3 className="text-lg font-semibold text-primary">
+              Savings reminder
+            </h3>
+
+            <p className="mt-1 text-sm text-secondary">
+              Any household member can change this. Applies to the whole
+              household.
+            </p>
+          </div>
+
+          <SavingsReminderEditor initialDay={savingsReminderDay} />
         </section>
       </div>
     </main>

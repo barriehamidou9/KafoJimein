@@ -29,8 +29,12 @@ import { addBudgetItem, getBudgetItems } from "@/app/actions/budgetItems";
 import { getHouseholdIncome } from "@/app/actions/householdIncome";
 
 // For the "Paid by" dropdown, and to look up the current user's own
-// display name for the preamble greeting.
-import { getHouseholdMembers } from "@/app/actions/households";
+// display name for the preamble greeting. getSavingsReminderDay is for
+// the savings reminder's day-of-month threshold.
+import {
+  getHouseholdMembers,
+  getSavingsReminderDay,
+} from "@/app/actions/households";
 
 // For the "Due this month" section.
 import { getDueRecurringExpenses } from "@/app/actions/recurringExpenses";
@@ -86,6 +90,7 @@ export default async function Home() {
     householdMembers,
     dueExpenses,
     householdIncome,
+    savingsReminderDay,
   ] = await Promise.all([
     getBudgetItems(),
     getCategories(),
@@ -93,6 +98,7 @@ export default async function Home() {
     getHouseholdMembers(),
     getDueRecurringExpenses(user.id),
     getHouseholdIncome(),
+    getSavingsReminderDay(),
   ]);
 
   const monthLabel = getHouseholdMonthLabel(HOUSEHOLD_TIME_ZONE);
@@ -134,6 +140,7 @@ export default async function Home() {
           currentUserId={user.id}
           initialDueExpenses={dueExpenses}
           householdIncome={householdIncome}
+          savingsReminderDay={savingsReminderDay}
           addBudgetItem={addBudgetItem}
         />
       </div>
