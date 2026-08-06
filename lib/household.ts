@@ -67,41 +67,73 @@ export function getTimeZoneOffsetMs(date: Date, timeZone: string): number {
   return asIfUtc - date.getTime();
 }
 
-// The UTC instant for midnight on the 1st of the month `monthOffset`
-// months from now, as measured in `timeZone`'s local calendar (0 = this
-// month, 1 = next month, etc).
-export function startOfMonthUtc(monthOffset: number, timeZone: string): Date {
-  const nowParts = new Intl.DateTimeFormat("en-US", {
-    timeZone,
-    year: "numeric",
-    month: "2-digit",
-  }).formatToParts(new Date());
-
-  const year = Number(nowParts.find((part) => part.type === "year")?.value);
-  const month =
-    Number(nowParts.find((part) => part.type === "month")?.value) - 1;
-
+// The UTC instant for midnight on the 1st of an explicit household-local
+// month (year, month), the arbitrary-month primitive both
+// startOfMonthUtc and getMonthRange build on. month is 1-indexed (1 =
+// January), matching getHouseholdToday()'s convention below.
+export function startOfGivenMonthUtc(
+  year: number,
+  month: number,
+  timeZone: string
+): Date {
   // Treat the desired wall-clock date as if it were UTC, then correct by
   // the zone's real offset. Refined twice so this stays correct even if a
   // DST transition lands between "now" and the 1st of the target month.
-  const naiveUtc = Date.UTC(year, month + monthOffset, 1, 0, 0, 0);
+  // month - 1: Date.UTC takes a 0-indexed month, and (like Date.UTC
+  // itself) happily accepts values outside 1-12 and normalizes across
+  // the year boundary, which is what lets startOfMonthUtc below pass in
+  // today's month + an arbitrary offset unchanged.
+  const naiveUtc = Date.UTC(year, month - 1, 1, 0, 0, 0);
   const offset1 = getTimeZoneOffsetMs(new Date(naiveUtc), timeZone);
   const offset2 = getTimeZoneOffsetMs(new Date(naiveUtc - offset1), timeZone);
 
   return new Date(naiveUtc - offset2);
 }
 
-// The current calendar month's [start, end) as UTC instants, in the
-// household's timezone — the one place this boundary is computed, so
-// every caller (budget overview, month summary, ...) agrees exactly.
-export function getCurrentMonthRange(timeZone: string): {
+// The UTC instant for midnight on the 1st of the month `monthOffset`
+// months from now, as measured in `timeZone`'s local calendar (0 = this
+// month, 1 = next month, etc). A thin wrapper over startOfGivenMonthUtc,
+// anchored to today's household-local {year, month} — algebraically
+// identical to this function's original standalone implementation, since
+// getHouseholdToday().month is startOfGivenMonthUtc's month-1 plus 1.
+export function startOfMonthUtc(monthOffset: number, timeZone: string): Date {
+  const today = getHouseholdToday(timeZone);
+
+  return startOfGivenMonthUtc(today.year, today.month + monthOffset, timeZone);
+}
+
+// The [start, end) of an arbitrary household-local calendar month, as
+// UTC instants — the arbitrary-month equivalent of getCurrentMonthRange
+// below, for a month picker or any other caller that isn't asking about
+// "now".
+export function getMonthRange(
+  year: number,
+  month: number,
+  timeZone: string
+): {
   start: Date;
   end: Date;
 } {
   return {
-    start: startOfMonthUtc(0, timeZone),
-    end: startOfMonthUtc(1, timeZone),
+    start: startOfGivenMonthUtc(year, month, timeZone),
+    end: startOfGivenMonthUtc(year, month + 1, timeZone),
   };
+}
+
+// The current calendar month's [start, end) as UTC instants, in the
+// household's timezone — the one place this boundary is computed, so
+// every caller (budget overview, month summary, ...) agrees exactly. A
+// thin wrapper: today's {year, month} via getHouseholdToday(), fed into
+// getMonthRange() — produces the exact same instants as before, since
+// that's exactly what the old startOfMonthUtc(0, ...)/(1, ...) calls
+// resolved to.
+export function getCurrentMonthRange(timeZone: string): {
+  start: Date;
+  end: Date;
+} {
+  const today = getHouseholdToday(timeZone);
+
+  return getMonthRange(today.year, today.month, timeZone);
 }
 
 // Today's date as the household's local calendar sees it right now —
