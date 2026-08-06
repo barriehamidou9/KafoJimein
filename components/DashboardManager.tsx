@@ -23,6 +23,20 @@ import { computeSavingsOverview } from "@/lib/savingsOverview";
 import { computePaidByBreakdown } from "@/lib/paidByBreakdown";
 
 // ==========================================
+// Household config
+// Timezone-correct "today" and month-boundary math for the savings
+// reminder's day-of-month threshold and days-left figure — the same
+// helpers getDueRecurringExpenses()/the Transactions month picker
+// already rely on, reused here rather than any new date logic.
+// ==========================================
+
+import {
+  HOUSEHOLD_TIME_ZONE,
+  getHouseholdToday,
+  getMonthRange,
+} from "@/lib/household";
+
+// ==========================================
 // Components
 // ==========================================
 
@@ -140,6 +154,27 @@ function CalendarIcon() {
   );
 }
 
+// Distinct from TargetIcon (already used for the Saving section itself)
+// so the reminder card reads as its own thing at a glance.
+function BellIcon() {
+  return (
+    <svg
+      width="18"
+      height="18"
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="1.5"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden="true"
+    >
+      <path d="M12 3a5 5 0 0 0-5 5v3.2c0 .6-.2 1.2-.6 1.7L5 15h14l-1.4-2.1a2.9 2.9 0 0 1-.6-1.7V8a5 5 0 0 0-5-5Z" />
+      <path d="M9.5 18a2.5 2.5 0 0 0 5 0" />
+    </svg>
+  );
+}
+
 // ==========================================
 // Types
 // ==========================================
@@ -212,6 +247,28 @@ export default function DashboardManager({
   // Saving totals are cumulative (all-time), unlike everything else on
   // the dashboard — see lib/savingsOverview.ts.
   const savingsOverview = computeSavingsOverview(items, categories);
+
+  // Savings reminder: a passive nudge, not a confirm/skip flow like
+  // recurring expenses — pure derived display over savingsOverview, no
+  // new table/state. Only surfaces from the 25th onward (so it doesn't
+  // nag early in the month), only for goals with a monthly_target that
+  // haven't hit it yet this month, and disappears the instant
+  // savedThisMonth catches up — no dismiss action needed.
+  const today = getHouseholdToday(HOUSEHOLD_TIME_ZONE);
+  const { end: monthEnd } = getMonthRange(
+    today.year,
+    today.month,
+    HOUSEHOLD_TIME_ZONE
+  );
+  const daysLeft = Math.ceil(
+    (monthEnd.getTime() - Date.now()) / (24 * 60 * 60 * 1000)
+  );
+  const behindGoals = savingsOverview.filter(
+    (saving) =>
+      saving.monthlyTarget !== null &&
+      saving.savedThisMonth < saving.monthlyTarget
+  );
+  const showSavingsReminder = today.day >= 25 && behindGoals.length > 0;
 
   // Read-only transparency line under the hero — see lib/paidByBreakdown.ts.
   const paidByBreakdown = computePaidByBreakdown(items, householdMembers);
@@ -336,6 +393,29 @@ export default function DashboardManager({
             .map((entry) => `${entry.displayName} $${entry.totalPaid.toFixed(2)}`)
             .join(" · ")}
         </p>
+      )}
+
+      {/* Savings reminder: sits above Tracked spending/Saving so the
+          nudge is seen first — but kept visually calm (theme tokens, no
+          warn/danger) so it reads as a gentle reminder, not an alert. */}
+      {showSavingsReminder && (
+        <section className="mt-6 rounded-2xl border border-border bg-surface-card p-5">
+          <SectionHeader icon={<BellIcon />} title="Savings reminder" />
+
+          <p className="text-sm text-secondary">
+            {daysLeft} {daysLeft === 1 ? "day" : "days"} left this month
+          </p>
+
+          <div className="mt-3 space-y-2">
+            {behindGoals.map((saving) => (
+              <p key={saving.categoryId} className="text-sm text-primary">
+                <span className="font-medium">{saving.name}</span>: saved $
+                {saving.savedThisMonth.toFixed(2)} of $
+                {(saving.monthlyTarget ?? 0).toFixed(2)}
+              </p>
+            ))}
+          </div>
+        </section>
       )}
 
       {/* Tracked spending + Saving, side by side on desktop, stacked on
