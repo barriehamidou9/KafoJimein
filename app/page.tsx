@@ -91,7 +91,7 @@ export default async function Home() {
     getCategories(),
     getBudgets(),
     getHouseholdMembers(),
-    getDueRecurringExpenses(),
+    getDueRecurringExpenses(user.id),
     getHouseholdIncome(),
   ]);
 

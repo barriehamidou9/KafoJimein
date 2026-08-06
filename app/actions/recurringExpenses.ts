@@ -171,21 +171,36 @@ export async function deleteRecurringExpense(id: string): Promise<void> {
 }
 
 // ==========================================
-// Recurring expenses that are "due" right now: last_confirmed_year/month
-// isn't the current household-timezone period (never confirmed counts as
-// not-this-period), AND today's household-timezone day-of-month has
-// reached or passed the template's day_of_month. Filters in JS over
-// getRecurringExpenses() rather than a separate query — same approach
-// computeBudgetOverview takes, reasonable for a household's small amount
-// of data.
+// Recurring expenses that are "due" right now, for userId specifically:
+// paid_by is theirs, last_confirmed_year/month isn't the current
+// household-timezone period (never confirmed counts as not-this-period),
+// AND today's household-timezone day-of-month has reached or passed the
+// template's day_of_month. Filters in JS over getRecurringExpenses()
+// rather than a separate query — same approach computeBudgetOverview
+// takes, reasonable for a household's small amount of data.
+//
+// The paid_by check is display-only, scoping whose dashboard shows a
+// prompt for a given expense — it's not an authorization boundary.
+// confirm_recurring_expense/skip_recurring_expense (migration 0015)
+// still only check household membership, not paid_by, so any member can
+// still confirm/skip any expense in their household if they reach it
+// some other way; getRecurringExpenses() itself is untouched and keeps
+// returning every expense regardless of payer, which is what the
+// admin-facing /recurring management page uses.
 // ==========================================
 
-export async function getDueRecurringExpenses(): Promise<RecurringExpense[]> {
+export async function getDueRecurringExpenses(
+  userId: string
+): Promise<RecurringExpense[]> {
   const expenses = await getRecurringExpenses();
 
   const { year, month, day } = getHouseholdToday(HOUSEHOLD_TIME_ZONE);
 
   return expenses.filter((expense) => {
+    if (expense.paid_by !== userId) {
+      return false;
+    }
+
     const alreadyConfirmedThisPeriod =
       expense.last_confirmed_year === year &&
       expense.last_confirmed_month === month;
