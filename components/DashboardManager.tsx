@@ -402,26 +402,34 @@ export default function DashboardManager({
       )}
 
       {/* Savings reminder: sits above Tracked spending/Saving so the
-          nudge is seen first — but kept visually calm (theme tokens, no
-          warn/danger) so it reads as a gentle reminder, not an alert. */}
+          nudge is seen first. Compact amber alert strip (tinted
+          background + left accent bar), same warn/10 tint
+          DueRecurringExpenseCard uses, so it reads as a nudge worth
+          noticing without the weight of a full data card. */}
       {showSavingsReminder && (
-        <section className="mt-6 rounded-2xl border border-border bg-surface-card p-5">
-          <SectionHeader icon={<BellIcon />} title="Savings reminder" />
+        <div className="mt-6 flex items-start gap-3 rounded-xl border-l-4 border-warn bg-warn/10 px-4 py-3">
+          <span className="text-warn">
+            <BellIcon />
+          </span>
 
-          <p className="text-sm text-secondary">
-            {daysLeft} {daysLeft === 1 ? "day" : "days"} left this month
-          </p>
+          <div>
+            <p className="text-sm font-medium text-primary">
+              Save before month-end · {daysLeft}{" "}
+              {daysLeft === 1 ? "day" : "days"} left
+            </p>
 
-          <div className="mt-3 space-y-2">
-            {behindGoals.map((saving) => (
-              <p key={saving.categoryId} className="text-sm text-primary">
-                <span className="font-medium">{saving.name}</span>: saved $
-                {saving.savedThisMonth.toFixed(2)} of $
-                {(saving.monthlyTarget ?? 0).toFixed(2)}
-              </p>
-            ))}
+            <p className="mt-0.5 text-sm text-secondary">
+              {behindGoals
+                .map(
+                  (saving) =>
+                    `${saving.name} $${saving.savedThisMonth.toFixed(2)} / $${(
+                      saving.monthlyTarget ?? 0
+                    ).toFixed(2)}`
+                )
+                .join(" · ")}
+            </p>
           </div>
-        </section>
+        </div>
       )}
 
       {/* Tracked spending + Saving, side by side on desktop, stacked on
